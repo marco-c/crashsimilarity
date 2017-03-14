@@ -8,7 +8,6 @@ from urlparse import urlparse
 from datetime import timedelta
 import dateutil.parser
 import utils
-import config
 
 
 SCHEMA_VERSION = '1'
