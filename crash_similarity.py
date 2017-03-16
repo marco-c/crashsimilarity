@@ -58,6 +58,15 @@ def read_corpus(fnames):
     return [gensim.models.doc2vec.TaggedDocument(trace, [i, signature]) for i, (trace, signature) in enumerate(elems)]
 
 
+def get_stack_trace_from_crashid(crash_id):
+    url = 'https://crash-stats.mozilla.com/api/ProcessedCrash'
+    params = {
+            'crash_id': crash_id
+        }
+    res = utils.get_with_retries(url,params)
+    return res.json()['proto_signature']
+
+
 def get_stack_traces_for_signature(fnames, signature):
     traces = set()
 
