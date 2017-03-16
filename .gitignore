@@ -3,3 +3,4 @@
 *.pickle
 .DS_Store
 *.json
+crashclustering_data/schema_version
