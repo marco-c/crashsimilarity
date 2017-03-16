@@ -43,7 +43,7 @@ def read_corpus(fnames):
     for fname in fnames:
         with smart_open.smart_open(fname, encoding='iso-8859-1') as f:
             for line in f:
-                data = json.loads(line)
+                data = json.loads(line.decode('utf8'))
                 proto_signature = data['proto_signature']
             
                 if should_skip(proto_signature):
