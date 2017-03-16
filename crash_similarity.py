@@ -3,11 +3,8 @@
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import os
-import argparse
 import time
 import random
-import collections
-import re
 import gensim
 import smart_open
 import json
@@ -16,7 +13,8 @@ import numpy as np
 import bisect
 import pyximport; pyximport.install()
 
-# import download_data
+import download_data
+import utils
 
 
 def clean_func(func):
