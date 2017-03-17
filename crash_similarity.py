@@ -102,9 +102,9 @@ def get_stack_trace_for_uuid(uuid):
  def train_model(corpus):
     
     # Store the time of training the model in last_trained.txt
-    cur_time=datetime.today() 
+    cur_time = datetime.today() 
     
-    str=cur_time.strftime('%b %d %Y %I:%M%p')
+    str = cur_time.strftime('%b %d %Y %I:%M%p')
     
     with open("last_trained.txt", "w") as text_file:
 
