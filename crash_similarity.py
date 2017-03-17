@@ -68,11 +68,11 @@ def get_stack_trace_from_crashid(crash_id):
 def get_stack_traces_for_signature(fnames, signature, traces_num=100):
     traces = set()
 
-    #query stack traces online
+    # query stack traces online
     url = 'https://crash-stats.mozilla.com/api/SuperSearch'
     params = {
         'signature': '=' + signature,
-        '_facets':  ['proto_signature'],
+        '_facets': ['proto_signature'],
         '_facets_size': traces_num,
         '_results_number': 0
     }
@@ -81,7 +81,7 @@ def get_stack_traces_for_signature(fnames, signature, traces_num=100):
     for record in records:
         traces.add(record['term'])
 
-    #query stack traces from downloaded data
+    # query stack traces from downloaded data
     for fname in fnames:
         with smart_open.smart_open(fname, encoding='iso-8859-1') as f:
             for line in f:
