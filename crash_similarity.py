@@ -15,7 +15,7 @@ import multiprocessing
 import numpy as np
 import bisect
 import pyximport; pyximport.install()
-
+import utils
 # import download_data
 
 
@@ -70,6 +70,18 @@ def get_stack_trace_from_crashid(crash_id):
 def get_stack_traces_for_signature(fnames, signature):
     traces = set()
 
+    #query stack traces online
+    url = 'https://crash-stats.mozilla.com/api/SuperSearch'
+    params = {
+        'signature': '=' + signature,
+        '_columns':  'proto_signature'
+    }
+    res = utils.get_with_retries(url, params)
+    records = res.json()['hits']
+    for i in range(len(records)):
+        traces.add(records[i]['proto_signature'])
+
+    #query stack traces from downloaded data
     for fname in fnames:
         with smart_open.smart_open(fname, encoding='iso-8859-1') as f:
             for line in f:
