@@ -37,7 +37,7 @@ def checkif_model_trained_in_last_24hours():
 
     time_diff = cur_time_value - last_trained_time_value
 
-    return time_diff < 0
+    return time_diff < 86400
 
 
 def clean_func(func):
@@ -106,36 +106,32 @@ def get_stack_trace_for_uuid(uuid):
     return data['proto_signature']
 
 
-def train_model(corpus):
-    
-    
-        
-    else:    
-        if os.path.exists('stack_traces_model.pickle'):
-             return gensim.models.Doc2Vec.load('stack_traces_model.pickle')
+ def train_model(corpus):
+    if os.path.exists('stack_traces_model.pickle'):
+        return gensim.models.Doc2Vec.load('stack_traces_model.pickle')
 
-        random.shuffle(corpus)
+    random.shuffle(corpus)
 
-        print('CORPUS LENGTH: ' + str(len(corpus)))
-        print(corpus[0])
+    print('CORPUS LENGTH: ' + str(len(corpus)))
+    print(corpus[0])
 
-        try:
-             workers = multiprocessing.cpu_count()
-        except:
-            workers = 2
+    try:
+        workers = multiprocessing.cpu_count()
+    except:
+        workers = 2
 
-        model = gensim.models.doc2vec.Doc2Vec(size=100, window=8, iter=20, workers=workers)
+    model = gensim.models.doc2vec.Doc2Vec(size=100, window=8, iter=20, workers=workers)
 
-        model.build_vocab(corpus)
+    model.build_vocab(corpus)
 
-        t = time.time()
-        print('Training model...')
-        model.train(corpus)
-        print('Model trained in ' + str(time.time() - t) + ' s.')
+    t = time.time()
+    print('Training model...')
+    model.train(corpus)
+    print('Model trained in ' + str(time.time() - t) + ' s.')
 
-        model.save('stack_traces_model.pickle')
+    model.save('stack_traces_model.pickle')
 
-        return model
+    return model
 
 
 def top_similar_traces(model, corpus, stack_trace, top=10):
