@@ -26,16 +26,16 @@ def checkif_model_trained_in_last_24hours():
         last_trained_time = datetime.strptime(data, '%b %d %Y %I:%M%p')
         last_trained_time_value = last_trained_time.day*86400 + last_trained_time.second
 
-    cur_time = datetime.today()
-    cur_time_value = cur_time.day*86400 + cur_time.second
+    cur_time=datetime.today()
+    cur_time_value=cur_time.day*86400 + cur_time.second
 
-    str = cur_time.strftime('%b %d %Y %I:%M%p')
+    str=cur_time.strftime('%b %d %Y %I:%M%p')
 
     with open("last_trained.txt", "w") as text_file:
 
         text_file.write(str + "\n")
 
-    time_diff = cur_time_value - last_trained_time_value
+    time_diff=cur_time_value - last_trained_time_value
 
     return time_diff < 86400
 
