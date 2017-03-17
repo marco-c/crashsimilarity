@@ -2,17 +2,20 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import os
-import time
-import download_data
-import utils
-import random
-import gensim
-import smart_open
+import bisect
 import json
 import multiprocessing
+import os
+import random
+import time
+
+import gensim
+import smart_open
 import numpy as np
-import bisect
+
+import download_data
+import utils
+
 import pyximport
 pyximport.install()
 
