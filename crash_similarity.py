@@ -15,20 +15,19 @@ import numpy as np
 import download_data
 import utils
 
+import datetime
 import pyximport
 pyximport.install()
-
-import datetime
 
 
 # Checks if the model has been trained in the last 24 hours (using datetime.timedelta class)
 def check_training_time(time_interval):
 
-    init_time=datetime.timedelta(days=time_interval.day, seconds=time_interval.second)
+    init_time = datetime.timedelta(days=time_interval.day,seconds=time_interval.second)
 
-    init_time_after_24hours=init_time + datetime.timedelta(days=1)
+    init_time_after_24hours = init_time + datetime.timedelta(days=1)
 
-    new_training_time=datetime.timedelta(days=dt.datetime.today().day, seconds=dt.datetime.today().second)
+    new_training_time = datetime.timedelta(days=datetime.datetime.today().day,seconds=datetime.datetime.today().second)
 
     return new_training_time < init_time_after_24hours
 
