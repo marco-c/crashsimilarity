@@ -4,13 +4,12 @@
 
 import os
 import json
-from urlparse import urlparse
 from datetime import timedelta
 import dateutil.parser
 import utils
 
-
 SCHEMA_VERSION = '1'
+
 
 def clean_old_data():
     try:
@@ -83,14 +82,11 @@ def download_day_crashes(day, product='Firefox'):
         }
 
         print(str(day) + ' - ' + str(len(crashes)))
-        r = utils.get_with_retries('https://crash-stats.mozilla.com/api/SuperSearch', params=params)
 
-        if r.status_code != 200:
-            print(r.text)
-            raise Exception(r)
+        response = utils.get_with_retries('https://crash-stats.mozilla.com/api/SuperSearch', params=params)
+        response.raise_for_status()
 
-        found = r.json()['hits']
-
+        found = response.json()['hits']
         crashes += found
 
         if len(found) < RESULTS_NUMBER:
@@ -120,15 +116,12 @@ def download_crashes(days, product='Firefox'):
 
 
 def download_crash(uuid):
-    r = utils.get_with_retries('https://crash-stats.mozilla.com/api/ProcessedCrash', params={
+    response = utils.get_with_retries('https://crash-stats.mozilla.com/api/ProcessedCrash', params={
         'crash_id': uuid,
     })
+    response.raise_for_status()
 
-    if r.status_code != 200:
-        print(r.text)
-        raise Exception(r)
-
-    return r.json()
+    return response.json()
 
 
 def get_paths(days, product='Firefox'):
