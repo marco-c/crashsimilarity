@@ -2,17 +2,19 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import os
-import time
-import download_data
-import utils
-import random
-import gensim
-import smart_open
+import bisect
 import json
 import multiprocessing
+import os
+import random
+import time
+
+import gensim
 import numpy as np
-import bisect
+
+import download_data
+import utils
+
 import pyximport
 pyximport.install()
 
@@ -38,20 +40,18 @@ def should_skip(stack_trace):
 def read_corpus(fnames):
     elems = []
     already_selected = set()
-    for fname in fnames:
-        with smart_open.smart_open(fname, encoding='iso-8859-1') as f:
-            for line in f:
-                data = json.loads(line.decode('utf8'))
-                proto_signature = data['proto_signature']
+    for line in utils.read_files(fnames):
+        data = json.loads(line)
+        proto_signature = data['proto_signature']
 
-                if should_skip(proto_signature):
-                    continue
+        if should_skip(proto_signature):
+            continue
 
-                processed = preprocess(proto_signature)
+        processed = preprocess(proto_signature)
 
-                if frozenset(processed) not in already_selected:
-                    elems.append((processed, data['signature']))
-                    already_selected.add(frozenset(processed))
+        if frozenset(processed) not in already_selected:
+            elems.append((processed, data['signature']))
+        already_selected.add(frozenset(processed))
 
     return [gensim.models.doc2vec.TaggedDocument(trace, [i, signature]) for i, (trace, signature) in enumerate(elems)]
 
@@ -82,12 +82,10 @@ def get_stack_traces_for_signature(fnames, signature, traces_num=100):
         traces.add(record['term'])
 
     # query stack traces from downloaded data
-    for fname in fnames:
-        with smart_open.smart_open(fname, encoding='iso-8859-1') as f:
-            for line in f:
-                data = json.loads(line)
-                if data['signature'] == signature:
-                    traces.add(data['proto_signature'])
+    for line in utils.read_files(fnames):
+        data = json.loads(line)
+        if data['signature'] == signature:
+            traces.add(data['proto_signature'])
 
     return list(traces)
 
