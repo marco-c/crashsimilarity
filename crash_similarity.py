@@ -18,7 +18,6 @@ import pyximport; pyximport.install()
 import datetime
 # import download_data
 
-
 def clean_func(func):
     func = func.lower().replace('\n', '')
 
@@ -84,9 +83,7 @@ def get_stack_trace_for_uuid(uuid):
     data = download_data.download_crash(uuid)
     return data['proto_signature']
 
-
- def train_model(corpus):
-    
+def train_model(corpus):
     if os.path.exists('stack_traces_model.pickle'):
         return gensim.models.Doc2Vec.load('stack_traces_model.pickle')
 
