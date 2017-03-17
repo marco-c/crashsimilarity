@@ -15,3 +15,10 @@ def get_with_retries(url, params=None, headers=None):
     s.mount('https://crash-stats.mozilla.com', HTTPAdapter(max_retries=retries))
 
     return s.get(url, params=params, headers=headers)
+
+
+def read_files_generator(file_names, open_file_function):
+    for name in file_names:
+        with open_file_function(name) as f:
+            for line in f:
+                yield line if isinstance(line, str) else line.decode('utf8')
