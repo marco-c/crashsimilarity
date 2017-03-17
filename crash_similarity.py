@@ -14,9 +14,9 @@ import json
 import multiprocessing
 import numpy as np
 import bisect
-import pyximport; pyximport.install()
 import utils
-# import download_data
+import pyximport
+pyximport.install()
 
 
 def clean_func(func):
@@ -67,15 +67,16 @@ def get_stack_trace_from_crashid(crash_id):
     return res.json()['proto_signature']
 
 
-def get_stack_traces_for_signature(fnames, signature):
-     traces = set()
+def get_stack_traces_for_signature(fnames, signature, traces_num=100):
+    traces = set()
 
     #query stack traces online
     url = 'https://crash-stats.mozilla.com/api/SuperSearch'
     params = {
         'signature': '=' + signature,
         '_facets':  ['proto_signature'],
-        '_results_number' : 0
+        '_facets_size': traces_num,
+        '_results_number': 0
     }
     res = utils.get_with_retries(url, params)
     records = res.json()['facets']['proto_signature']
