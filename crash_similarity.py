@@ -15,28 +15,20 @@ import multiprocessing
 import numpy as np
 import bisect
 import pyximport; pyximport.install()
-import datetime
+import datetime as dt
+from datetime import timedelta
 # import download_data
 
 # Checks if the model has been trained in the last 24 hours (using datetime.timedelta class)
-def check_if_model_trained_in_last_24hours(time_interval):
-    
-    new_time = datetime.timedelta(days=time_interval.day,seconds=time_interval.second,microseconds=time_interval.microsecond)
+def check_training_time(time_interval):
 
-    new_time_total_seconds = new_time.total_seconds()
+    init_time = timedelta(days=time_interval.day, seconds=time_interval.second)
 
-    with open('last_trained.txt', 'r') as myfile:
-        data = myfile.read()
-        lt= datetime.strptime(data, '%b %d %Y %I:%M%p')
+    init_time_after_24hours = init_time + timedelta(days=1)
 
-        last_trained = datetime.timedelta(days=lt.day,seconds=lt.second,microseconds=lt.microsecond)
+    new_training_time = timedelta(days=dt.datetime.today().day, seconds=dt.datetime.today().second)
 
-        last_trained_total_seconds = last_trained.total_seconds()
-
-        time_diff = last_trained_total_seconds-new_time_total_seconds
-
-    return time_diff < 86400
-
+    return new_training_time < init_time_after_24hours
 
 
 def clean_func(func):
@@ -106,14 +98,13 @@ def get_stack_trace_for_uuid(uuid):
 
 
  def train_model(corpus):
-    
+
     # Store the time of training the model in last_trained.txt
-    cur_time = datetime.datetime.today() 
-    str = cur_time.strftime('%b %d %Y %I:%M%p')
+    cur_time = datetime.datetime.today()
     with open("last_trained.txt", "w") as text_file:
-        text_file.write(str + "\n")
-        
-        
+        text_file.write(str = cur_time.strftime('%b %d %Y %I:%M%p') + "\n")
+
+
     if os.path.exists('stack_traces_model.pickle'):
         return gensim.models.Doc2Vec.load('stack_traces_model.pickle')
 
