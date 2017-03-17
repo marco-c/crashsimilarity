@@ -4,7 +4,6 @@
 
 import os
 import json
-from urlparse import urlparse
 from datetime import timedelta
 import dateutil.parser
 import utils
