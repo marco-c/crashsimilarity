@@ -10,7 +10,6 @@ import random
 import time
 
 import gensim
-import smart_open
 import numpy as np
 
 import download_data
@@ -41,7 +40,7 @@ def should_skip(stack_trace):
 def read_corpus(fnames):
     elems = []
     already_selected = set()
-    for line in utils.read_files_generator(fnames, smart_open.smart_open):
+    for line in utils.read_files(fnames):
         data = json.loads(line)
         proto_signature = data['proto_signature']
 
@@ -83,7 +82,7 @@ def get_stack_traces_for_signature(fnames, signature, traces_num=100):
         traces.add(record['term'])
 
     # query stack traces from downloaded data
-    for line in utils.read_files_generator(fnames, smart_open.smart_open):
+    for line in utils.read_files(fnames):
         data = json.loads(line)
         if data['signature'] == signature:
             traces.add(data['proto_signature'])
