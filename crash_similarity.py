@@ -37,10 +37,7 @@ def checkif_model_trained_in_last_24hours():
 
     time_diff = cur_time_value - last_trained_time_value
 
-    if(time_diff>86400):
-        return False
-    else:
-        return True
+    return time_diff < 0
 
 
 def clean_func(func):
@@ -111,8 +108,7 @@ def get_stack_trace_for_uuid(uuid):
 
 def train_model(corpus):
     
-    if checkif_model_trained_in_last_24hours()==True:
-        print 'Model already trained in last 24 hours \n'
+    
         
     else:    
         if os.path.exists('stack_traces_model.pickle'):
