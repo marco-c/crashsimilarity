@@ -4,13 +4,13 @@
 
 import os
 import json
-from urlparse import urlparse
 from datetime import timedelta
 import dateutil.parser
 import utils
 
 
 SCHEMA_VERSION = '1'
+
 
 def clean_old_data():
     try:

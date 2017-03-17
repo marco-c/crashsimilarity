@@ -3,18 +3,16 @@
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import os
-import argparse
 import time
+import download_data
+import utils
 import random
-import collections
-import re
 import gensim
 import smart_open
 import json
 import multiprocessing
 import numpy as np
 import bisect
-import utils
 import pyximport
 pyximport.install()
 
@@ -29,10 +27,10 @@ def clean_func(func):
 
 
 def preprocess(stack_trace):
-    return [clean_func(f) for f in stack_trace.split(' | ')][:10] # XXX: 10 bottom frames or all of them?
+    return [clean_func(f) for f in stack_trace.split(' | ')][:10]  # XXX: 10 bottom frames or all of them?
 
 
- # Exclude stack traces without symbols.
+# Exclude stack traces without symbols.
 def should_skip(stack_trace):
     return 'xul.dll@' in stack_trace or 'XUL@' in stack_trace or 'libxul.so@' in stack_trace
 
@@ -43,9 +41,9 @@ def read_corpus(fnames):
     for fname in fnames:
         with smart_open.smart_open(fname, encoding='iso-8859-1') as f:
             for line in f:
-                data = json.loads(line)
+                data = json.loads(line.decode('utf8'))
                 proto_signature = data['proto_signature']
-            
+
                 if should_skip(proto_signature):
                     continue
 
@@ -61,9 +59,9 @@ def read_corpus(fnames):
 def get_stack_trace_from_crashid(crash_id):
     url = 'https://crash-stats.mozilla.com/api/ProcessedCrash'
     params = {
-            'crash_id': crash_id
-        }
-    res = utils.get_with_retries(url,params)
+        'crash_id': crash_id
+    }
+    res = utils.get_with_retries(url, params)
     return res.json()['proto_signature']
 
 
@@ -164,7 +162,7 @@ def top_similar_traces(model, corpus, stack_trace, top=10):
 
     for i, (doc_id, rwmd_distance) in enumerate(distances):
         # Stop once we have 'top' confirmed distances and all the rwmd lower bounds are higher than the smallest top confirmed distance.
-        if len(confirmed_distances) >= top and rwmd_distance > confirmed_distances[top-1]:
+        if len(confirmed_distances) >= top and rwmd_distance > confirmed_distances[top - 1]:
             print('stopping at ' + str(i))
             print(top)
             break
@@ -176,7 +174,6 @@ def top_similar_traces(model, corpus, stack_trace, top=10):
         confirmed_distances_ids.insert(j, doc_id)
 
     similarities = zip(confirmed_distances_ids, confirmed_distances)
-
 
     print('Query done in ' + str(time.time() - t) + ' s.')
 
