@@ -32,4 +32,4 @@ if __name__ == '__main__':
     similarities = crash_similarity.top_similar_traces(model, corpus, stack_trace, args.top)
 
     for similarity in similarities:
-    print(u'%s: <%s>\n' % ((corpus[similarity[0]].tags[1], similarity[1]), ' '.join(corpus[similarity[0]].words))
+        print(u'%s: <%s>\n' % ((corpus[similarity[0]].tags[1], similarity[1]), ' '.join(corpus[similarity[0]].words))
