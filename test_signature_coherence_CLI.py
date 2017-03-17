@@ -4,19 +4,15 @@
 
 # CLI INTERFACE THAT EVALUATES THE SIMILARITY BETWEEN STACK TRACES IN A GIVEN SIGNATURE.
 
-
 import download_data
 import crash_similarity
 import argparse
-import utils
-from datetime import timedelta
 
 parser = argparse.ArgumentParser(description='Test Signature Coherence')
 parser.add_argument('--signature',required=True, help='Signature' )
 parser.add_argument('--product',required=True, help='Product for which crash data is needed to be downloaded' )
 parser.add_argument('--top', help='Number of top similar and different stack traces(Default 10)', default=10, type=int )
 args = parser.parse_args()
-
 
 if __name__ == '__main__':
 
