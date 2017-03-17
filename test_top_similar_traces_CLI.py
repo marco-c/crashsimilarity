@@ -8,8 +8,6 @@
 import download_data
 import crash_similarity
 import argparse
-import utils
-from datetime import timedelta
 
 parser = argparse.ArgumentParser(description='Returns the top ten similar stack traces')
 parser.add_argument('--crash_id', required=True, help='crash_id corresponding to the stack trace' )
