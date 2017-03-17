@@ -2,4 +2,3 @@ gensim==0.13.3
 smart_open==1.4.0
 numpy==1.11.2
 requests==2.13.0
-flake8==3.3.0
