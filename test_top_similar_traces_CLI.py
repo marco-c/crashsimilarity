@@ -26,14 +26,14 @@ if __name__ == '__main__':
     # reads the corpus
     corpus = crash_similarity.read_corpus(paths)
     
-    #rains the model on that data
+    # trains the model on that data
     model = crash_similarity.train_model(corpus)
     
     # gets the stack_trace corresponding to the crash_id (input by the user as an argument)
-    stack_trace = get_stack_trace_from_crashid(args.crash_id)   
+    stack_trace = crash_similarity.get_stack_trace_from_crashid(args.crash_id)   
     
     #returns the top similar stack traces (number of stack traces returned = args.top)
-    similarities = top_similar_traces(model, corpus, stack_trace, args.top) 
+    similarities = crash_similarity.top_similar_traces(model, corpus, stack_trace, args.top) 
 
     for similarity in similarities:
         print(u'%s: <%s>\n' % ((corpus[similarity[0]].tags[1], similarity[1]), ' '.join(corpus[similarity[0]].words))
