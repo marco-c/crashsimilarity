@@ -16,9 +16,6 @@ import bisect
 import pyximport
 pyximport.install()
 
-import download_data
-import utils
-
 
 def clean_func(func):
     func = func.lower().replace('\n', '')
