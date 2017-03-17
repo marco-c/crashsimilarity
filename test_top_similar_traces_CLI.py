@@ -12,9 +12,9 @@ import utils
 from datetime import timedelta
 
 parser = argparse.ArgumentParser(description='Returns the top ten similar stack traces')
-parser.add_argument('--crash_id',required = True, help = 'crash_id corresponding to the stack trace' )
-parser.add_argument('--product',required = True, help = 'Product for which crash data is needed to be downloaded' )
-parser.add_argument('--top', help = 'Number of top similar and different stack traces(Default 10)', default = 10, type = int )
+parser.add_argument('--crash_id', required=True, help='crash_id corresponding to the stack trace' )
+parser.add_argument('--product', required=True, help='Product for which crash data is needed to be downloaded' )
+parser.add_argument('--top', help='Number of top similar and different stack traces(Default 10)', default=10, type=int )
 args = parser.parse_args()
 
 if __name__ == '__main__':
