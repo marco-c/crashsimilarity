@@ -11,6 +11,7 @@ import utils
 
 SCHEMA_VERSION = '1'
 
+
 def clean_old_data():
     try:
         old_schema = read_json('crashclustering_data/schema_version')[0]
