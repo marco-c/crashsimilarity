@@ -84,6 +84,7 @@ def get_stack_trace_for_uuid(uuid):
     data = download_data.download_crash(uuid)
     return data['proto_signature']
 
+
 def train_model(corpus):
     if os.path.exists('stack_traces_model.pickle'):
         return gensim.models.Doc2Vec.load('stack_traces_model.pickle')
