@@ -15,8 +15,32 @@ import multiprocessing
 import numpy as np
 import bisect
 import pyximport; pyximport.install()
+from datetime import datetime
 
 # import download_data
+
+# Checks if the model has been trained in the last 24 hours
+def checkif_model_trained_in_last_24hours():
+    with open('last_trained.txt', 'r') as myfile:
+        data = myfile.read()
+        last_trained_time = datetime.strptime(data, '%b %d %Y %I:%M%p')
+        last_trained_time_value = last_trained_time.day*86400 + last_trained_time.second
+
+    cur_time = datetime.today()
+    cur_time_value = cur_time.day*86400 + cur_time.second
+
+    str = cur_time.strftime('%b %d %Y %I:%M%p')
+
+    with open("last_trained.txt", "w") as text_file:
+
+        text_file.write(str + "\n")
+
+    time_diff = cur_time_value - last_trained_time_value
+
+    if(time_diff>86400):
+        return False
+    else:
+        return True
 
 
 def clean_func(func):
@@ -86,31 +110,36 @@ def get_stack_trace_for_uuid(uuid):
 
 
 def train_model(corpus):
-    if os.path.exists('stack_traces_model.pickle'):
-        return gensim.models.Doc2Vec.load('stack_traces_model.pickle')
+    
+    if checkif_model_trained_in_last_24hours()==True:
+        print 'Model already trained in last 24 hours \n'
+        
+    else:    
+        if os.path.exists('stack_traces_model.pickle'):
+             return gensim.models.Doc2Vec.load('stack_traces_model.pickle')
 
-    random.shuffle(corpus)
+        random.shuffle(corpus)
 
-    print('CORPUS LENGTH: ' + str(len(corpus)))
-    print(corpus[0])
+        print('CORPUS LENGTH: ' + str(len(corpus)))
+        print(corpus[0])
 
-    try:
-        workers = multiprocessing.cpu_count()
-    except:
-        workers = 2
+        try:
+             workers = multiprocessing.cpu_count()
+        except:
+            workers = 2
 
-    model = gensim.models.doc2vec.Doc2Vec(size=100, window=8, iter=20, workers=workers)
+        model = gensim.models.doc2vec.Doc2Vec(size=100, window=8, iter=20, workers=workers)
 
-    model.build_vocab(corpus)
+        model.build_vocab(corpus)
 
-    t = time.time()
-    print('Training model...')
-    model.train(corpus)
-    print('Model trained in ' + str(time.time() - t) + ' s.')
+        t = time.time()
+        print('Training model...')
+        model.train(corpus)
+        print('Model trained in ' + str(time.time() - t) + ' s.')
 
-    model.save('stack_traces_model.pickle')
+        model.save('stack_traces_model.pickle')
 
-    return model
+        return model
 
 
 def top_similar_traces(model, corpus, stack_trace, top=10):
