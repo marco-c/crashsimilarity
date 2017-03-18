@@ -110,7 +110,7 @@ def train_model(corpus):
     # Store the time of training the model in last_trained.txt
     cur_time = datetime.datetime.today()
     with open("last_trained.txt", "w") as text_file:
-        text_file.write(str=cur_time.strftime('%b %d %Y %I:%M%p'))
+        text_file.write(cur_time.strftime('%b %d %Y %I:%M%p'))
 
     if os.path.exists('stack_traces_model.pickle'):
         return gensim.models.Doc2Vec.load('stack_traces_model.pickle')
