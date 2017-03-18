@@ -128,7 +128,7 @@ def train_model(corpus):
 
 
 def wmdistance(model, doc_words, words_to_test_clean, all_distances):
-    doc_words_clean =  [token for token in doc_words if token in model]
+    doc_words_clean = [token for token in doc_words if token in model]
     dictionary = Dictionary(documents=[doc_words_clean, words_to_test_clean])
     vocab_len = len(dictionary)
 
@@ -139,14 +139,14 @@ def wmdistance(model, doc_words, words_to_test_clean, all_distances):
         bow = dictionary.doc2bow(doc)
 
         for idx, count in bow:
-            norm_bow[idx] = count/float(len(doc))
+            norm_bow[idx] = count / float(len(doc))
 
         return norm_bow
 
     test_bow = create_bow(words_to_test_clean)
     doc_bow = create_bow(doc_words_clean)
 
-    #create distance_matrix using precalculate cosine distance from rwmd
+    # create distance_matrix using precalculate cosine distance from rwmd
     index_clean = [model.wv.vocab[word].index for idx, word in dictionary.items() if word in model]
     distances = all_distances[index_clean]
 
@@ -170,7 +170,7 @@ def top_similar_traces(model, corpus, stack_trace, top=10):
     # Cos-similarity
     all_distances = np.array(1 - np.dot(model.wv.syn0norm, model.wv.syn0norm[[model.wv.vocab[word].index for word in words_to_test_clean]].transpose()), dtype=np.double)
 
-    # Relaxed Word Mover's Distance for selecting 
+    # Relaxed Word Mover's Distance for selecting
     t = time.time()
     distances = []
     for doc_id in range(0, len(corpus)):
@@ -197,10 +197,10 @@ def top_similar_traces(model, corpus, stack_trace, top=10):
             break
 
         # TODO: replace this with inline code (to avoid recalculating the distances).
-        # wmd = model.wmdistance(words_to_test, corpus[doc_id].words)                     #uses euclidian distance
-        
-        wmd = wmdistance(model, corpus[doc_id].words, words_to_test_clean, all_distances) #uses cosine distance
-        
+        # wmd = model.wmdistance(words_to_test, corpus[doc_id].words)                      # uses euclidian distance
+
+        wmd = wmdistance(model, corpus[doc_id].words, words_to_test_clean, all_distances)  # uses cosine distance
+
         j = bisect.bisect(confirmed_distances, wmd)
         confirmed_distances.insert(j, wmd)
         confirmed_distances_ids.insert(j, doc_id)
@@ -210,7 +210,6 @@ def top_similar_traces(model, corpus, stack_trace, top=10):
     print('Query done in ' + str(time.time() - t) + ' s.')
 
     return sorted(similarities, key=lambda v: v[1])[:top]
-
 
 
 def signature_similarity(model, paths, signature1, signature2):
