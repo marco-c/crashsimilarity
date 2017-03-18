@@ -37,7 +37,7 @@ def should_skip(stack_trace):
     return 'xul.dll@' in stack_trace or 'XUL@' in stack_trace or 'libxul.so@' in stack_trace
 
 
-def read_corpus(fnames):
+def read_corpus(fnames, embedding_algo='doc2vec'):
     elems = []
     already_selected = set()
     for line in utils.read_files(fnames):
@@ -50,10 +50,16 @@ def read_corpus(fnames):
         processed = preprocess(proto_signature)
 
         if frozenset(processed) not in already_selected:
-            elems.append((processed, data['signature']))
-        already_selected.add(frozenset(processed))
+            if embedding_algo == 'doc2vec':
+                elems.append((processed, data['signature']))
+            elif embedding_algo == 'word2vec':
+                # no need for signatures, as word2vec doesn't require labeling
+                elems.append(processed)
 
-    return [gensim.models.doc2vec.TaggedDocument(trace, [i, signature]) for i, (trace, signature) in enumerate(elems)]
+    if embedding_algo == 'doc2vec':
+        return [gensim.models.doc2vec.TaggedDocument(trace, [i, signature]) for i, (trace, signature) in enumerate(elems)]
+    if embedding_algo == 'word2vec':
+        return elems
 
 
 def get_stack_trace_from_crashid(crash_id):
@@ -95,9 +101,9 @@ def get_stack_trace_for_uuid(uuid):
     return data['proto_signature']
 
 
-def train_model(corpus):
-    if os.path.exists('stack_traces_model.pickle'):
-        return gensim.models.Doc2Vec.load('stack_traces_model.pickle')
+def train_model(corpus, embedding_algo='doc2vec'):
+    if os.path.exists('stack_traces_'+embedding_algo+'_model_pickle'):
+        return gensim.models.Doc2Vec.load('stack_traces_'+embedding_algo+'_model_pickle')
 
     random.shuffle(corpus)
 
@@ -109,7 +115,10 @@ def train_model(corpus):
     except:
         workers = 2
 
-    model = gensim.models.doc2vec.Doc2Vec(size=100, window=8, iter=20, workers=workers)
+    if embedding_algo == 'doc2vec':
+        model = gensim.models.doc2vec.Doc2Vec(size=100, window=8, iter=20, workers=workers)
+    elif embedding_algo == 'word2vec':
+        model = gensim.models.Word2Vec(size=100, window=8, iter=20, workers=workers)
 
     model.build_vocab(corpus)
 
@@ -118,7 +127,7 @@ def train_model(corpus):
     model.train(corpus)
     print('Model trained in ' + str(time.time() - t) + ' s.')
 
-    model.save('stack_traces_model.pickle')
+    model.save('stack_traces_'+embedding_algo+'_model_pickle')
 
     return model
 
@@ -204,7 +213,13 @@ def signature_similarity(model, paths, signature1, signature2):
 if __name__ == '__main__':
     # download_data.download_crashes(days=7, product='Firefox')
     # paths = download_data.get_paths(days=7, product='Firefox')
-    paths = ['crashsimilarity_data/firefox-crashes-2016-11-09.json.gz', 'crashsimilarity_data/firefox-crashes-2016-11-08.json.gz', 'crashsimilarity_data/firefox-crashes-2016-11-07.json.gz', 'crashsimilarity_data/firefox-crashes-2016-11-06.json.gz', 'crashsimilarity_data/firefox-crashes-2016-11-05.json.gz', 'crashsimilarity_data/firefox-crashes-2016-11-04.json.gz', 'crashsimilarity_data/firefox-crashes-2016-11-03.json.gz']
+    paths = ['crashsimilarity_data/firefox-crashes-2016-11-09.json.gz',
+             'crashsimilarity_data/firefox-crashes-2016-11-08.json.gz',
+             'crashsimilarity_data/firefox-crashes-2016-11-07.json.gz',
+             'crashsimilarity_data/firefox-crashes-2016-11-06.json.gz',
+             'crashsimilarity_data/firefox-crashes-2016-11-05.json.gz',
+             'crashsimilarity_data/firefox-crashes-2016-11-04.json.gz',
+             'crashsimilarity_data/firefox-crashes-2016-11-03.json.gz']
 
     corpus = read_corpus(paths)
 
