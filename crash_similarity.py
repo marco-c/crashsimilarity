@@ -102,8 +102,8 @@ def get_stack_trace_for_uuid(uuid):
 
 
 def train_model(corpus, embedding_algo='doc2vec'):
-    if os.path.exists('stack_traces_'+embedding_algo+'_model_pickle'):
-        return gensim.models.Doc2Vec.load('stack_traces_'+embedding_algo+'_model_pickle')
+    if os.path.exists('stack_traces_' + embedding_algo + '_model_pickle'):
+        return gensim.models.Doc2Vec.load('stack_traces_' + embedding_algo + '_model_pickle')
 
     random.shuffle(corpus)
 
@@ -127,7 +127,7 @@ def train_model(corpus, embedding_algo='doc2vec'):
     model.train(corpus)
     print('Model trained in ' + str(time.time() - t) + ' s.')
 
-    model.save('stack_traces_'+embedding_algo+'_model_pickle')
+    model.save('stack_traces_' + embedding_algo + '_model_pickle')
 
     return model
 
@@ -224,5 +224,5 @@ if __name__ == '__main__':
     corpus = read_corpus(paths)
 
     model = train_model(corpus)
-
     print(dict([(model.index2word[i], similarity) for i, similarity in enumerate(model.similar_by_word('igdumd32.dll@0x', topn=False))])['igdumd64.dll@0x'])
+   
