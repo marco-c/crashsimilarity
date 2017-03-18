@@ -23,13 +23,11 @@ pyximport.install()
 # Checks if the model has been trained in the last 24 hours (using datetime.timedelta class)
 def check_training_time(time_interval):
 
-    init_time = datetime.timedelta(days=time_interval.day, seconds=time_interval.second)
+    init_time = datetime.timedelta(days=time_interval.day)
 
-    init_time_after_24hours = init_time + datetime.timedelta(days=1)
+    new_training_time = datetime.timedelta(days=datetime.datetime.today().day)
 
-    new_training_time = datetime.timedelta(days=datetime.datetime.today().day, seconds=datetime.datetime.today().second)
-
-    return new_training_time < init_time_after_24hours
+    return new_training_time - init_time < 1
 
 
 def clean_func(func):
@@ -112,7 +110,7 @@ def train_model(corpus):
     # Store the time of training the model in last_trained.txt
     cur_time = datetime.datetime.today()
     with open("last_trained.txt", "w") as text_file:
-        text_file.write(str=cur_time.strftime('%b %d %Y %I:%M%p') + "\n")
+        text_file.write(str=cur_time.strftime('%b %d %Y %I:%M%p'))
 
     if os.path.exists('stack_traces_model.pickle'):
         return gensim.models.Doc2Vec.load('stack_traces_model.pickle')
