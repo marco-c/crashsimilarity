@@ -96,7 +96,8 @@ def get_stack_trace_for_uuid(uuid):
 
 
 def train_model(corpus):
-    if os.path.exists('stack_traces_model.pickle'):
+    if os.path.exists('stack_traces_model.pickle') and \
+       os.path.exists('stack_traces_model.pickle.docvecs.doctag_syn0.npy'):
         return gensim.models.Doc2Vec.load('stack_traces_model.pickle')
 
     random.shuffle(corpus)
@@ -122,12 +123,10 @@ def train_model(corpus):
 
     return model
 
-
 def top_similar_traces(model, corpus, stack_trace, top=10):
     model.init_sims(replace=True)
 
     similarities = []
-
     words_to_test = preprocess(stack_trace)
     words_to_test_clean = [w for w in words_to_test if w in model]
 
@@ -137,13 +136,13 @@ def top_similar_traces(model, corpus, stack_trace, top=10):
     sims = model.docvecs.most_similar([inferred_vector], topn=len(model.docvecs))
     '''
 
-    all_distances = 1 - np.dot(model.syn0norm, model.syn0norm[[model.vocab[word].index for word in words_to_test_clean]].transpose())
+    all_distances = 1 - np.dot(model.wv.syn0norm, model.wv.syn0norm[[model.wv.vocab[word].index for word in words_to_test_clean]].transpose())
     print(all_distances.shape)
 
     t = time.time()
     distances = []
     for doc_id in range(0, len(corpus)):
-        doc_words = [model.vocab[word].index for word in corpus[doc_id].words if word in model]
+        doc_words = [model.wv.vocab[word].index for word in corpus[doc_id].words if word in model]
         if len(doc_words) != 0:
             word_dists = all_distances[doc_words]
             rwmd = max(np.sum(np.min(word_dists, axis=0)), np.sum(np.min(word_dists, axis=1)))
