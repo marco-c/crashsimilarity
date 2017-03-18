@@ -225,4 +225,3 @@ if __name__ == '__main__':
 
     model = train_model(corpus)
     print(dict([(model.index2word[i], similarity) for i, similarity in enumerate(model.similar_by_word('igdumd32.dll@0x', topn=False))])['igdumd64.dll@0x'])
-   
