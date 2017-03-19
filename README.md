@@ -19,6 +19,7 @@ python3 -m unittest tests
 # Run a specific test
 python3 -m unittest tests/test_basic
 ```
+
 Badges:
 ```sh
 # Version Badge

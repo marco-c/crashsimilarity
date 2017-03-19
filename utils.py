@@ -1,4 +1,6 @@
 from datetime import datetime
+
+from smart_open import smart_open
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
@@ -15,3 +17,10 @@ def get_with_retries(url, params=None, headers=None):
     s.mount('https://crash-stats.mozilla.com', HTTPAdapter(max_retries=retries))
 
     return s.get(url, params=params, headers=headers)
+
+
+def read_files(file_names, open_file_function=smart_open):
+    for name in file_names:
+        with open_file_function(name) as f:
+            for line in f:
+                yield line if isinstance(line, str) else line.decode('utf8')
