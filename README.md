@@ -23,13 +23,10 @@ python3 -m unittest tests/test_basic
 Badges:
 ```sh
 # Version Badge
-.. image:: https://badge.fury.io/gh/marco-c%2Fcrashsimilarity.png
-   :target: https://badge.fury.io/gh/marco-c%2Fcrashsimilarity.svg
-   :alt: PyPI package
+[![GitHub version](https://badge.fury.io/gh/marco-c%2Fcrashsimilarity.svg)](https://badge.fury.io/gh/marco-c%2Fcrashsimilarity)
 
 
 # Travis Badge
-.. image:: https://travis-ci.org/marco-c/crashsimilarity.svg?branch=master.png
-   :target: https://travis-ci.org/marco-c/crashsimilarity
-   :alt: Travis CI build status
+[![Build Status](https://travis-ci.org/marco-c/crashsimilarity.svg?branch=master.png)](https://travis-ci.org/marco-c/crashsimilarity.svg?branch=master)
+
 ```
