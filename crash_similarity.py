@@ -11,16 +11,13 @@ import time
 
 import gensim
 import numpy as np
+from pyemd import emd
+import pyximport
 
 import download_data
 import utils
 
-from pyemd import emd
-from gensim.corpora.dictionary import Dictionary
-
-import pyximport
 pyximport.install()
-
 
 def clean_func(func):
     func = func.lower().replace('\n', '')
@@ -127,14 +124,14 @@ def train_model(corpus):
     return model
 
 
+#Code moodified from Gensim.keyedvector.py
 def wmdistance(model, doc_words, words_to_test_clean, all_distances):
     doc_words_clean = [token for token in doc_words if token in model]
-    dictionary = Dictionary(documents=[doc_words_clean, words_to_test_clean])
+    dictionary = gensim.corpora.Dictionary(documents=[doc_words_clean, words_to_test_clean])
     vocab_len = len(dictionary)
 
     # create bag of words from document
     def create_bow(doc):
-
         norm_bow = np.zeros(vocab_len, dtype=np.double)
         bow = dictionary.doc2bow(doc)
 
