@@ -28,7 +28,7 @@ def check_training_time(time_interval):
 
     new_training_time = timedelta(days=datetime.today().day)
 
-    return new_training_time - init_time < timedelta(days=1)
+    return new_training_time - last_trained_time < timedelta(days=1)
 
 
 def store_training_time():
