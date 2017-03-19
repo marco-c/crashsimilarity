@@ -1,5 +1,9 @@
 # crashsimilarity
 
+[![GitHub version](https://badge.fury.io/gh/marco-c%2Fcrashsimilarity.svg)](https://badge.fury.io/gh/marco-c%2Fcrashsimilarity)
+
+[![Build Status](https://travis-ci.org/marco-c/crashsimilarity.svg?branch=master)](https://travis-ci.org/marco-c/crashsimilarity)
+
 ## Running tests
 
 With Python 2:
@@ -18,15 +22,4 @@ python3 -m unittest tests
 
 # Run a specific test
 python3 -m unittest tests/test_basic
-```
-
-Badges:
-```sh
-# Version Badge
-[![GitHub version](https://badge.fury.io/gh/marco-c%2Fcrashsimilarity.svg)](https://badge.fury.io/gh/marco-c%2Fcrashsimilarity)
-
-
-# Travis Badge
-[![Build Status](https://travis-ci.org/marco-c/crashsimilarity.svg?branch=master)](https://travis-ci.org/marco-c/crashsimilarity)
-
 ```
