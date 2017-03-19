@@ -21,7 +21,7 @@ pyximport.install()
 
 
 # Checks if the model has been trained in the last 24 hours
-def check_training_time(time_interval):
+def check_training_time():
     with open('last_trained.txt', 'r') as myfile:
         data = myfile.read()
         last_trained_time = datetime.strptime(data, '%b %d %Y %I:%M%p').day
