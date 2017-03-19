@@ -27,6 +27,6 @@ Badges:
 
 
 # Travis Badge
-[![Build Status](https://travis-ci.org/marco-c/crashsimilarity.svg?branch=master.png)](https://travis-ci.org/marco-c/crashsimilarity.svg?branch=master)
+[![Build Status](https://travis-ci.org/marco-c/crashsimilarity.svg?branch=master)](https://travis-ci.org/marco-c/crashsimilarity)
 
 ```
