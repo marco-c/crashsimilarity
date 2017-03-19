@@ -8,7 +8,7 @@ import multiprocessing
 import os
 import random
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import gensim
 import numpy as np
