@@ -24,11 +24,9 @@ pyximport.install()
 def check_training_time(time_interval):
     with open('last_trained.txt', 'r') as myfile:
         data = myfile.read()
-        last_trained_time = timedelta(days=datetime.strptime(data, '%b %d %Y %I:%M%p').day)
+        last_trained_time = datetime.strptime(data, '%b %d %Y %I:%M%p').day
 
-    new_training_time = timedelta(days=datetime.today().day)
-
-    return new_training_time - last_trained_time < timedelta(days=1)
+    return datetime.today().day - last_trained_time < 1
 
 
 def store_training_time():
