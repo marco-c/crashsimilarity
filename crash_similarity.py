@@ -102,9 +102,11 @@ def get_stack_trace_for_uuid(uuid):
 
 
 def train_model(corpus, embedding_algo='doc2vec'):
-    if os.path.exists('stack_traces_' + embedding_algo + '_model_pickle'):
+    if os.path.exists('stack_traces_' + embedding_algo + '_model_pickle') and embedding_algo == 'doc2vec':
         return gensim.models.Doc2Vec.load('stack_traces_' + embedding_algo + '_model_pickle')
-
+    elif os.path.exists('stack_traces_' + embedding_algo + '_model_pickle') and embedding_algo == 'word2vec':
+        return gensim.models.Word2Vec.load('stack_traces_' + embedding_algo + '_model_pickle')
+    
     random.shuffle(corpus)
 
     print('CORPUS LENGTH: ' + str(len(corpus)))
