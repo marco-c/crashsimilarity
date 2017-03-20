@@ -1,7 +1,5 @@
 # crashsimilarity
 
-[![GitHub version](https://badge.fury.io/gh/marco-c%2Fcrashsimilarity.svg)](https://badge.fury.io/gh/marco-c%2Fcrashsimilarity)
-
 [![Build Status](https://travis-ci.org/marco-c/crashsimilarity.svg?branch=master)](https://travis-ci.org/marco-c/crashsimilarity)
 
 ## Running tests
