@@ -150,7 +150,7 @@ def create_distance_matrix(model, dictionary, docset, all_distances):
     return distances
 
 
-# Code moodified from Gensim.keyedvector.py
+# Code moodified from https://github.com/RaRe-Technologies/gensim/blob/4f0e2ae/gensim/models/keyedvectors.py#L339
 def wmdistance(model, words1, words2, all_distances):
     dictionary = gensim.corpora.Dictionary(documents=[words1, words2])
     vocab_len = len(dictionary)
