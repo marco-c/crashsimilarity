@@ -7,7 +7,6 @@ import json
 import multiprocessing
 import os
 import random
-import sys
 import time
 from datetime import datetime
 
@@ -21,6 +20,7 @@ import utils
 
 pyximport.install()
 
+
 # Checks if the model has been trained in the last 24 hours
 def check_training_time():
     with open('last_trained.txt', 'r') as myfile:
@@ -33,6 +33,7 @@ def check_training_time():
 def store_training_time():
     with open("last_trained.txt", "w") as text_file:
         text_file.write(datetime.today().strftime('%b %d %Y %I:%M%p'))
+
 
 def clean_func(func):
     func = func.lower().replace('\n', '')
@@ -138,17 +139,18 @@ def train_model(corpus):
 
     return model
 
+
 # create distance_matrix using precalculate cosine distance from rwmd
 def create_distance_matrix(model, dictionary, docset, all_distances):
     distances = np.zeros((len(dictionary), len(dictionary)), dtype=np.double)
     for j, w in dictionary.items():
         if w in docset:
-            distances[0:all_distances.shape[1], j] = all_distances[model.wv.vocab[w].index].transpose()
+            distances[:all_distances.shape[1], j] = all_distances[model.wv.vocab[w].index].transpose()
 
     return distances
 
 
-#Code moodified from Gensim.keyedvector.py
+# Code moodified from Gensim.keyedvector.py
 def wmdistance(model, words1, words2, all_distances):
     dictionary = gensim.corpora.Dictionary(documents=[words1, words2])
     vocab_len = len(dictionary)
@@ -188,8 +190,6 @@ def top_similar_traces(model, corpus, stack_trace, top=10):
 
     # Cos-similarity
     all_distances = np.array(1.0 - np.dot(model.wv.syn0norm, model.wv.syn0norm[[model.wv.vocab[word].index for word in words_to_test_clean]].transpose()), dtype=np.double)
-    print all_distances.shape
-    print "clean word_test:  ", words_to_test_clean
 
     # Relaxed Word Mover's Distance for selecting
     t = time.time()
