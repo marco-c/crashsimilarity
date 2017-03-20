@@ -9,6 +9,7 @@ import os
 import random
 import sys
 import time
+from datetime import datetime
 
 import gensim
 import numpy as np
@@ -19,6 +20,19 @@ import download_data
 import utils
 
 pyximport.install()
+
+# Checks if the model has been trained in the last 24 hours
+def check_training_time():
+    with open('last_trained.txt', 'r') as myfile:
+        data = myfile.read()
+        last_trained_time = datetime.strptime(data, '%b %d %Y %I:%M%p').day
+
+    return datetime.today().day - last_trained_time < 1
+
+
+def store_training_time():
+    with open("last_trained.txt", "w") as text_file:
+        text_file.write(datetime.today().strftime('%b %d %Y %I:%M%p'))
 
 def clean_func(func):
     func = func.lower().replace('\n', '')
