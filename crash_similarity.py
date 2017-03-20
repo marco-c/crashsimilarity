@@ -7,6 +7,7 @@ import json
 import multiprocessing
 import os
 import random
+import sys
 import time
 
 import gensim
@@ -123,11 +124,19 @@ def train_model(corpus):
 
     return model
 
+# create distance_matrix using precalculate cosine distance from rwmd
+def create_distance_matrix(model, dictionary, docset, all_distances):
+    distances = np.zeros((len(dictionary), len(dictionary)), dtype=np.double)
+    for j, w in dictionary.items():
+        if w in docset:
+            distances[0:all_distances.shape[1], j] = all_distances[model.wv.vocab[w].index].transpose()
+
+    return distances
+
 
 #Code moodified from Gensim.keyedvector.py
-def wmdistance(model, doc_words, words_to_test_clean, all_distances):
-    doc_words_clean = [token for token in doc_words if token in model]
-    dictionary = gensim.corpora.Dictionary(documents=[doc_words_clean, words_to_test_clean])
+def wmdistance(model, words1, words2, all_distances):
+    dictionary = gensim.corpora.Dictionary(documents=[words1, words2])
     vocab_len = len(dictionary)
 
     # create bag of words from document
@@ -140,14 +149,13 @@ def wmdistance(model, doc_words, words_to_test_clean, all_distances):
 
         return norm_bow
 
-    test_bow = create_bow(words_to_test_clean)
-    doc_bow = create_bow(doc_words_clean)
+    bow1 = create_bow(words1)
+    bow2 = create_bow(words2)
 
-    # create distance_matrix using precalculate cosine distance from rwmd
-    index_clean = [model.wv.vocab[word].index for idx, word in dictionary.items() if word in model]
-    distances = all_distances[index_clean]
+    docset = set(words2)
+    distances = create_distance_matrix(model, dictionary, docset, all_distances)
 
-    return emd(test_bow, doc_bow, distances)
+    return emd(bow1, bow2, distances)
 
 
 def top_similar_traces(model, corpus, stack_trace, top=10):
@@ -156,7 +164,7 @@ def top_similar_traces(model, corpus, stack_trace, top=10):
     similarities = []
 
     words_to_test = preprocess(stack_trace)
-    words_to_test_clean = [w for w in words_to_test if w in model]
+    words_to_test_clean = [w for w in np.unique(words_to_test).tolist() if w in model]
 
     # TODO: Test if a first sorting with the average vectors is useful.
     '''
@@ -165,7 +173,9 @@ def top_similar_traces(model, corpus, stack_trace, top=10):
     '''
 
     # Cos-similarity
-    all_distances = np.array(1 - np.dot(model.wv.syn0norm, model.wv.syn0norm[[model.wv.vocab[word].index for word in words_to_test_clean]].transpose()), dtype=np.double)
+    all_distances = np.array(1.0 - np.dot(model.wv.syn0norm, model.wv.syn0norm[[model.wv.vocab[word].index for word in words_to_test_clean]].transpose()), dtype=np.double)
+    print all_distances.shape
+    print "clean word_test:  ", words_to_test_clean
 
     # Relaxed Word Mover's Distance for selecting
     t = time.time()
@@ -196,7 +206,8 @@ def top_similar_traces(model, corpus, stack_trace, top=10):
         # TODO: replace this with inline code (to avoid recalculating the distances).
         # wmd = model.wmdistance(words_to_test, corpus[doc_id].words)                      # uses euclidian distance
 
-        wmd = wmdistance(model, corpus[doc_id].words, words_to_test_clean, all_distances)  # uses cosine distance
+        doc_words_clean = [w for w in corpus[doc_id].words if w in model]
+        wmd = wmdistance(model, words_to_test_clean, doc_words_clean, all_distances)  # uses cosine distance
 
         j = bisect.bisect(confirmed_distances, wmd)
         confirmed_distances.insert(j, wmd)
@@ -210,15 +221,16 @@ def top_similar_traces(model, corpus, stack_trace, top=10):
 
 
 def signature_similarity(model, paths, signature1, signature2):
+    model.init_sims(replace=True)
     traces1 = get_stack_traces_for_signature(paths, signature1)
     traces2 = get_stack_traces_for_signature(paths, signature2)
 
     similarities = []
-
     already_processed = set()
 
     for doc1 in traces1:
-        words1 = [word for word in preprocess(doc1) if word in model]
+        words1 = np.unique([word for word in preprocess(doc1) if word in model]).tolist()
+        distances = np.array(1.0 - np.dot(model.wv.syn0norm, model.wv.syn0norm[[model.wv.vocab[word].index for word in words1]].transpose()), dtype=np.double)
 
         for doc2 in traces2:
             words2 = [word for word in preprocess(doc2) if word in model]
@@ -227,7 +239,7 @@ def signature_similarity(model, paths, signature1, signature2):
                 continue
             already_processed.add(frozenset([frozenset(words1), frozenset(words2)]))
 
-            similarities.append((doc1, doc2, model.wmdistance(words1, words2)))
+            similarities.append((doc1, doc2, wmdistance(model, words1, words2, distances)))
 
     return sorted(similarities, key=lambda v: v[2])
 
