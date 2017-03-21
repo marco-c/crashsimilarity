@@ -3,6 +3,7 @@ import logging
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
+
 def get_signatures_from_bug(bug_id):
     url = 'https://bugzilla.mozilla.org/rest/bug'
     response = utils.get_with_retries(url, params={'id': bug_id})
