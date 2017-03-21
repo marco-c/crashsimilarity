@@ -122,8 +122,6 @@ def train_model(corpus):
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
     logging.debug('CORPUS LENGTH: ' + str(len(corpus)))
     logging.debug(corpus[0])
-
-
     try:
         workers = multiprocessing.cpu_count()
     except:
@@ -138,11 +136,9 @@ def train_model(corpus):
     model.train(corpus)
     logging.debug('Model trained in ' + str(time.time() - t) + ' s.')
 
-
     model.save('stack_traces_model.pickle')
 
     return model
-
 
 # create distance_matrix using precalculate cosine distance from rwmd
 def create_distance_matrix(model, dictionary, docset, all_distances):
