@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %
 if __name__ == '__main__':
     # download_data.download_crashes(days=7, product=args.product)
     # paths = download_data.get_paths(days=7, product=args.product)
-    paths = ['crashsimilarity_data/firefox-crashes-2016-11-09.json', 'crashsimilarity_data/firefox-crashes-2016-11-08.json', 'crashsimilarity_data/firefox-crashes-2016-11-07.json', 'crashsimilarity_data/firefox-crashes-2016-11-06.json', 'crashsimilarity_data/firefox-crashes-2016-11-05.json', 'crashsimilarity_data/firefox-crashes-2016-11-04.json', 'crashsimilarity_data/firefox-crashes-2016-11-03.json']
+    paths = ['crashsimilarity_data/firefox-crashes-2016-11-09.json.gz', 'crashsimilarity_data/firefox-crashes-2016-11-08.json.gz', 'crashsimilarity_data/firefox-crashes-2016-11-07.json.gz', 'crashsimilarity_data/firefox-crashes-2016-11-06.json.gz', 'crashsimilarity_data/firefox-crashes-2016-11-05.json.gz', 'crashsimilarity_data/firefox-crashes-2016-11-04.json.gz', 'crashsimilarity_data/firefox-crashes-2016-11-03.json.gz']
 
     corpus = crash_similarity.read_corpus(paths)
 
