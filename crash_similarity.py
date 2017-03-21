@@ -8,7 +8,7 @@ import multiprocessing
 import os
 import random
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import gensim
 import numpy as np
@@ -21,18 +21,15 @@ import utils
 pyximport.install()
 
 
-# Checks if the model has been trained in the last 24 hours
-def check_training_time():
-    with open('last_trained.txt', 'r') as myfile:
-        data = myfile.read()
-        last_trained_time = datetime.strptime(data, '%b %d %Y %I:%M%p').day
-
-    return datetime.today().day - last_trained_time < 1
+def retrain_timeout_expired(training_interval=timedelta(hours=24)):
+    with open('last_trained.txt', 'r') as f:
+        last_trained_time = datetime.strptime(f.read(), '%b %d %Y %H:%M')
+        return last_trained_time + training_interval < datetime.now()
 
 
-def store_training_time():
-    with open("last_trained.txt", "w") as text_file:
-        text_file.write(datetime.today().strftime('%b %d %Y %I:%M%p'))
+def save_training_time():
+    with open("last_trained.txt", "w") as f:
+        f.write(datetime.now().strftime('%b %d %Y %H:%M'))
 
 
 def clean_func(func):
