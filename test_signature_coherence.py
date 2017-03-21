@@ -17,7 +17,7 @@ if __name__ == '__main__':
     corpus = crash_similarity.read_corpus(paths)
 
     model = crash_similarity.train_model(corpus)
-    
+
     logging.debug('mozilla::net::CrashWithReason vs itself')
     similarities = crash_similarity.signature_similarity(model, paths, 'mozilla::net::CrashWithReason', 'mozilla::net::CrashWithReason')
     logging.debug('Top 10')
