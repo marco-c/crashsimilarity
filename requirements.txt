@@ -1,4 +1,4 @@
-gensim==0.13.3
+gensim==1.0.1
 smart_open==1.4.0
 numpy==1.11.2
 requests[security]==2.13.0
