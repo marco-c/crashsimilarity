@@ -8,7 +8,6 @@ import multiprocessing
 import os
 import random
 import time
-from datetime import datetime, timedelta
 
 import gensim
 import numpy as np
@@ -20,17 +19,6 @@ import utils
 from download_data import download_stack_traces_for_signature
 
 pyximport.install()
-
-
-def retrain_timeout_expired(training_interval=timedelta(hours=24)):
-    with open('last_trained.txt', 'r') as f:
-        last_trained_time = datetime.strptime(f.read(), '%b %d %Y %H:%M')
-        return last_trained_time + training_interval < datetime.now()
-
-
-def save_training_time():
-    with open("last_trained.txt", "w") as f:
-        f.write(datetime.now().strftime('%b %d %Y %H:%M'))
 
 
 def clean_func(func):
