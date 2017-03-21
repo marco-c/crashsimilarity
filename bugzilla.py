@@ -1,4 +1,7 @@
 import utils
+import logging
+
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 def get_signatures_from_bug(bug_id):
@@ -9,4 +12,4 @@ def get_signatures_from_bug(bug_id):
 
 
 if __name__ == "__main__":
-    print(get_signatures_from_bug('1308863'))
+    logging.debug(get_signatures_from_bug('1308863'))

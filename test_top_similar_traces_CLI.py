@@ -9,6 +9,8 @@ import crash_similarity
 import argparse
 import logging
 
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+
 parser = argparse.ArgumentParser(description='Returns the top ten similar stack traces')
 parser.add_argument('--crash_id', required=True, help='crash_id corresponding to the stack trace')
 parser.add_argument('--product', required=True, help='Product for which crash data is needed to be downloaded')
@@ -16,6 +18,7 @@ parser.add_argument('--top', help='Number of top similar and different stack tra
 args = parser.parse_args()
 
 if __name__ == '__main__':
+
     # downloads some data (e.g. the past 7 days)
     download_data.download_crashes(days=7, product=args.product)
     paths = download_data.get_paths(days=7, product=args.product)
@@ -33,5 +36,4 @@ if __name__ == '__main__':
     similarities = crash_similarity.top_similar_traces(model, corpus, stack_trace, args.top)
 
     for similarity in similarities:
-        logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
         logging.debug(u'%s: <%s>\n' % ((corpus[similarity[0]].tags[1], similarity[1]), ' '.join(corpus[similarity[0]].words)))
