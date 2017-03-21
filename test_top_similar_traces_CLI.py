@@ -1,4 +1,3 @@
-
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -10,6 +9,9 @@ import crash_similarity
 import argparse
 import utils
 from datetime import timedelta
+import logging
+
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 parser = argparse.ArgumentParser(description='Returns the top ten similar stack traces')
 parser.add_argument('--crash_id', required=True, help='crash_id corresponding to the stack trace' )
@@ -36,5 +38,4 @@ if __name__ == '__main__':
     similarities = crash_similarity.top_similar_traces(model, corpus, stack_trace, args.top) 
 
     for similarity in similarities:
-        print(u'%s: <%s>\n' % ((corpus[similarity[0]].tags[1], similarity[1]), ' '.join(corpus[similarity[0]].words))
-              
+        logging.debug(u'%s: <%s>\n' % ((corpus[similarity[0]].tags[1], similarity[1]), ' '.join(corpus[similarity[0]].words)))
