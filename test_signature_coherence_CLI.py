@@ -7,6 +7,9 @@
 import download_data
 import crash_similarity
 import argparse
+import logging
+
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 parser = argparse.ArgumentParser(description='Test Signature Coherence')
 parser.add_argument('--signature', required=True, help='Signature')
@@ -27,12 +30,12 @@ if __name__ == '__main__':
     model = crash_similarity.train_model(corpus)
 
     # Evaluates the similarity between the stack traces in a given signature.
-    print(args.signature + ' \n')
+    logging.debug(args.signature + ' \n')
 
     similarities = crash_similarity.signature_similarity(model, paths, args.signature, args.signature)
-    print('Top ' + str(args.top))
+    logging.debug('Top ' + str(args.top))
     for similarity in similarities[:args.top]:
-        print(u'%s\n%s\n%s\n' % (similarity[2], similarity[0], similarity[1]))
-    print('Bottom ' + str(args.top))
+        logging.debug(u'%s\n%s\n%s\n' % (similarity[2], similarity[0], similarity[1]))
+    logging.debug('Bottom ' + str(args.top))
     for similarity in similarities[-int(args.top):]:
-        print(u'%s\n%s\n%s\n' % (similarity[2], similarity[0], similarity[1]))
+        logging.debug(u'%s\n%s\n%s\n' % (similarity[2], similarity[0], similarity[1]))

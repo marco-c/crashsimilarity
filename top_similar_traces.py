@@ -7,6 +7,7 @@
 import download_data
 import crash_similarity
 import argparse
+import logging
 
 parser = argparse.ArgumentParser(description='Returns the top ten similar stack traces')
 parser.add_argument('--crash_id', required=True, help='crash_id corresponding to the stack trace')
@@ -32,4 +33,5 @@ if __name__ == '__main__':
     similarities = crash_similarity.top_similar_traces(model, corpus, stack_trace, args.top)
 
     for similarity in similarities:
-        print(u'%s: <%s>\n' % ((corpus[similarity[0]].tags[1], similarity[1]), ' '.join(corpus[similarity[0]].words)))
+        logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+        logging.debug(u'%s: <%s>\n' % ((corpus[similarity[0]].tags[1], similarity[1]), ' '.join(corpus[similarity[0]].words)))

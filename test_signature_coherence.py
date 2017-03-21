@@ -3,6 +3,10 @@
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import crash_similarity
+import logging
+
+
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 if __name__ == '__main__':
@@ -13,23 +17,23 @@ if __name__ == '__main__':
     corpus = crash_similarity.read_corpus(paths)
 
     model = crash_similarity.train_model(corpus)
-
-    print('mozilla::net::CrashWithReason vs itself')
+    
+    logging.debug('mozilla::net::CrashWithReason vs itself')
     similarities = crash_similarity.signature_similarity(model, paths, 'mozilla::net::CrashWithReason', 'mozilla::net::CrashWithReason')
-    print('Top 10')
+    logging.debug('Top 10')
     for similarity in similarities[:10]:
-        print(u'%s\n%s\n%s\n' % (similarity[2], similarity[0], similarity[1]))
-    print('Bottom 10')
+        logging.debug(u'%s\n%s\n%s\n' % (similarity[2], similarity[0], similarity[1]))
+    logging.debug('Bottom 10')
     for similarity in similarities[-10:]:
-        print(u'%s\n%s\n%s\n' % (similarity[2], similarity[0], similarity[1]))
+        logging.debug(u'%s\n%s\n%s\n' % (similarity[2], similarity[0], similarity[1]))
 
-    print('\n')
+    logging.debug('\n')
 
-    print('mozilla::MonitorAutoLock::MonitorAutoLock vs itself')
+    logging.debug('mozilla::MonitorAutoLock::MonitorAutoLock vs itself')
     similarities = crash_similarity.signature_similarity(model, paths, 'mozilla::MonitorAutoLock::MonitorAutoLock', 'mozilla::MonitorAutoLock::MonitorAutoLock')
-    print('Top 10')
+    logging.debug('Top 10')
     for similarity in similarities[:10]:
-        print(u'%s\n%s\n%s\n' % (similarity[2], similarity[0], similarity[1]))
-    print('Bottom 10')
+        logging.debug(u'%s\n%s\n%s\n' % (similarity[2], similarity[0], similarity[1]))
+    logging.debug('Bottom 10')
     for similarity in similarities[-10:]:
-        print(u'%s\n%s\n%s\n' % (similarity[2], similarity[0], similarity[1]))
+        logging.debug(u'%s\n%s\n%s\n' % (similarity[2], similarity[0], similarity[1]))
