@@ -140,6 +140,7 @@ def train_model(corpus):
 
     return model
 
+
 # create distance_matrix using precalculate cosine distance from rwmd
 def create_distance_matrix(model, dictionary, docset, all_distances):
     distances = np.zeros((len(dictionary), len(dictionary)), dtype=np.double)
