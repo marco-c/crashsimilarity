@@ -20,7 +20,7 @@ class UtilsTest(unittest.TestCase):
         self.assertEqual(resp.status_code, 400)
 
     def test_read_files(self):
-        paths = ['crashsimilarity_data/firefox-crashes-2016-11-09.json.gz']
+        paths = ['tests/test_utils.json']
         for line in utils.read_files(paths):
             assert 'proto_signature' in line
             assert 'signature' in line
