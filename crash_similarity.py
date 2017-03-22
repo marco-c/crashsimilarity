@@ -8,31 +8,18 @@ import multiprocessing
 import os
 import random
 import time
-from datetime import datetime
 
 import gensim
 import numpy as np
-from pyemd import emd
+
 import pyximport
+from pyemd import emd
 
 import download_data
 import utils
+from download_data import download_stack_traces_for_signature
 
 pyximport.install()
-
-
-# Checks if the model has been trained in the last 24 hours
-def check_training_time():
-    with open('last_trained.txt', 'r') as myfile:
-        data = myfile.read()
-        last_trained_time = datetime.strptime(data, '%b %d %Y %I:%M%p').day
-
-    return datetime.today().day - last_trained_time < 1
-
-
-def store_training_time():
-    with open("last_trained.txt", "w") as text_file:
-        text_file.write(datetime.today().strftime('%b %d %Y %I:%M%p'))
 
 
 def clean_func(func):
@@ -72,32 +59,9 @@ def read_corpus(fnames):
     return [gensim.models.doc2vec.TaggedDocument(trace, [i, signature]) for i, (trace, signature) in enumerate(elems)]
 
 
-def get_stack_trace_from_crashid(crash_id):
-    url = 'https://crash-stats.mozilla.com/api/ProcessedCrash'
-    params = {
-        'crash_id': crash_id
-    }
-    res = utils.get_with_retries(url, params)
-    return res.json()['proto_signature']
-
-
 def get_stack_traces_for_signature(fnames, signature, traces_num=100):
-    traces = set()
+    traces = download_stack_traces_for_signature(signature, traces_num)
 
-    # query stack traces online
-    url = 'https://crash-stats.mozilla.com/api/SuperSearch'
-    params = {
-        'signature': '=' + signature,
-        '_facets': ['proto_signature'],
-        '_facets_size': traces_num,
-        '_results_number': 0
-    }
-    res = utils.get_with_retries(url, params)
-    records = res.json()['facets']['proto_signature']
-    for record in records:
-        traces.add(record['term'])
-
-    # query stack traces from downloaded data
     for line in utils.read_files(fnames):
         data = json.loads(line)
         if data['signature'] == signature:
