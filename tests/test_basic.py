@@ -5,13 +5,11 @@
 import unittest
 
 
-import crash_similarity
-
-
 class BasicTest(unittest.TestCase):
 
     def test_train_model(self):
         self.assertTrue(True)
+
 
 if __name__ == '__main__':
     unittest.main()

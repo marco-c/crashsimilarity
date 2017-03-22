@@ -19,7 +19,7 @@ class CrashSimilarityTest(unittest.TestCase):
 
         print('Model Trained with paths:\n{}'.format(self.paths))
 
-    #test if equal reports have distance 0 and different reports have difference greater than 0
+    # Test if equal reports have distance 0 and different reports have difference greater than 0
     def test_zero_dist_coherence(self):
         signature = 'mozilla::testZeroCoherence'
         print('\nTesting Coherence with {} signature.'.format(signature))
