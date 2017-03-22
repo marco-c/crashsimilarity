@@ -1,6 +1,8 @@
 *.pyc
 *.gz
 *.pickle
+*.npy
 .DS_Store
 *.json
 crashclustering_data/schema_version
+last_trained.txt
