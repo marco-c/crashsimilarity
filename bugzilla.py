@@ -11,14 +11,14 @@ def get_signatures_from_bug(bug_id):
     response.raise_for_status()
     signature = []
     for sig in response.json()['bugs'][0]['cf_crash_signature'].split('\r\n'):
-        if sig[:3] == ' [@':
-            sig = sig[3:]
+        if sig[:2] == '[@':
+            sig = sig[2:]
         if sig[-1] == ']':
             sig = sig[:-1]
-        sig.strip()
+        sig = sig.strip()
         signature.append(sig)
     return signature
 
 
 if __name__ == "__main__":
-    print(get_signatures_from_bug('1308863'))
+    print(get_signatures_from_bug('1333486'))
