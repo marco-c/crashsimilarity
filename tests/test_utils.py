@@ -1,5 +1,3 @@
-import sys
-sys.path.append('../')
 import utils
 import unittest
 from datetime import datetime
@@ -20,6 +18,13 @@ class UtilsTest(unittest.TestCase):
     def test_get_with_retries_raises_400_with_no_params(self):
         resp = utils.get_with_retries(self.url)
         self.assertEqual(resp.status_code, 400)
+
+    def test_read_files(self):
+        paths = ['crashsimilarity_data/firefox-crashes-2016-11-09.json.gz']
+        for line in utils.read_files(paths):
+            assert 'proto_signature' in line
+            assert 'signature' in line
+            assert 'uuid' in line
 
 
 if __name__ == '__main__':
