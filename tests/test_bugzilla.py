@@ -15,8 +15,11 @@ class BugzillaTest(unittest.TestCase):
                             u'@0x0 | idmcchandler7_64.dll@0x2343f',
                             u'@0x0 | idmcchandler5_64.dll@0x1f0ea',
                             u'@0x0 | ffi_call']
+        crash_signatures2 = [u'std::list<T>::clear', u'std::list<T>::clear | CDeviceChild<T>::~CDeviceChild<T>']
         resp = bugzilla.get_signatures_from_bug('1333486')
+        resp2 = bugzilla.get_signatures_from_bug('1308863')
         self.assertEqual(resp, crash_signatures)
+        self.assertEqual(resp2, crash_signatures2)
 
 
 if __name__ == '__main__':
