@@ -1,9 +1,8 @@
-import unittest
-from datetime import datetime
 import sys
 sys.path.append('../')
 import utils
-from download_data import get_paths
+import unittest
+from datetime import datetime
 
 
 class UtilsTest(unittest.TestCase):
@@ -21,6 +20,7 @@ class UtilsTest(unittest.TestCase):
     def test_get_with_retries_raises_400_with_no_params(self):
         resp = utils.get_with_retries(self.url)
         self.assertEqual(resp.status_code, 400)
+
 
 if __name__ == '__main__':
     unittest.main()
