@@ -6,3 +6,4 @@
 *.json
 crashclustering_data/schema_version
 last_trained.txt
+.coverage
