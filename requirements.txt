@@ -4,3 +4,4 @@ smart_open==1.5.1
 numpy==1.11.2
 requests[security]==2.13.0
 cython==0.25.2
+python-dateutil==2.6.0
