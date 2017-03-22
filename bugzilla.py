@@ -11,12 +11,13 @@ def get_signatures_from_bug(bug_id):
     response.raise_for_status()
     signature = []
     for sig in response.json()['bugs'][0]['cf_crash_signature'].split('\r\n'):
-        if sig[:2] == '[@':
-            sig = sig[2:]
-        if sig[-1] == ']':
-            sig = sig[:-1]
-        sig = sig.strip()
-        signature.append(sig)
+        pos = sig.find('[@')
+        if pos != -1:
+            sig = sig[pos + 2:]
+        pos2 = sig.rfind(']')
+        if pos2 != -1:
+            sig = sig[:pos2]
+        signature.append(sig.strip())
     return signature
 
 
