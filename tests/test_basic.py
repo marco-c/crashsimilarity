@@ -7,7 +7,7 @@ import unittest
 
 class BasicTest(unittest.TestCase):
 
-    def test_train_model(self):
+    def test_pass(self):
         self.assertTrue(True)
 
 
