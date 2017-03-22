@@ -90,8 +90,9 @@ def train_model(corpus):
     except:
         workers = 2
 
-    model = gensim.models.doc2vec.Doc2Vec(size=100, window=8, iter=20, workers=workers)
+    model = gensim.models.doc2vec.Doc2Vec(size=100, window=8, iter=20, workers=workers, min_count=1)
 
+    print("Build Vocab")
     model.build_vocab(corpus)
 
     t = time.time()

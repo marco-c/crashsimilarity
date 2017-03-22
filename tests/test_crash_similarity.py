@@ -14,8 +14,8 @@ class CrashSimilarityTest(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         self.paths = ['tests/test.json']
-        self.corpus = crash_similarity.read_corpus(self.paths)
-        self.model = crash_similarity.train_model(self.corpus)
+        corpus = crash_similarity.read_corpus(self.paths)
+        self.model = crash_similarity.train_model(corpus)
 
         print('Model Trained with paths:\n{}'.format(self.paths))
 
