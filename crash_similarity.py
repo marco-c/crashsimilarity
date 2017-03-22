@@ -249,9 +249,9 @@ def signature_similarity(model, paths, signature1, signature2):
         for doc2 in traces2:
             words2 = [word for word in preprocess(doc2) if word in model]
 
-            if words1 == words2 or frozenset([tuple(words1),tuple(words2)]) in already_processed:
+            if words1 == words2 or frozenset([tuple(words1), tuple(words2)]) in already_processed:
                 continue
-            already_processed.add(frozenset([tuple(words1),tuple(words2)]))
+            already_processed.add(frozenset([tuple(words1), tuple(words2)]))
 
             similarities.append((doc1, doc2, wmdistance(model, words1, words2, distances)))
 

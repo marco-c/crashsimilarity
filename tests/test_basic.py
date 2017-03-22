@@ -30,19 +30,20 @@ class BasicTest(unittest.TestCase):
 
         error = []
         for doc1, doc2, dist in similarities:
-            if doc1 != doc2 :
+            if doc1 != doc2:
                 try:
                     self.assertTrue(dist != 0)
                 except AssertionError as e:
-                    error.append((doc1,doc2,dist))
+                    error.append((doc1, doc2, dist))
             else:
                 try:
                     self.assertEqual(dist, 0)
                 except AssertionError as e:
-                    error.append((doc1,doc2,dist))
+                    error.append((doc1, doc2, dist))
+
         print('Number of errors:{}'.format(len(error)))
         for e in error:
-            print('doc1: {}\ndoc2: {}\ndist: {}'.format(e[0],e[1],e[2]))
+            print('doc1: {}\ndoc2: {}\ndist: {}'.format(e[0], e[1], e[2]))
         self.assertEqual(len(error), 0)
 
     # Test if reports with the same words in different order have distance different than zero
