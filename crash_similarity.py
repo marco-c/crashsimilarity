@@ -90,10 +90,11 @@ def train_model(corpus):
     except:
         workers = 2
 
-    model = gensim.models.doc2vec.Doc2Vec(size=100, window=8, iter=20, workers=workers, min_count=1)
+    model = gensim.models.doc2vec.Doc2Vec(size=100, window=8, iter=20, workers=workers)
 
-    print("Build Vocab")
     model.build_vocab(corpus)
+
+    print("Vocab Length{}".format(len(model.wv.vocab)))
 
     t = time.time()
     print('Training model...')
@@ -135,6 +136,8 @@ def wmdistance(model, words1, words2, all_distances):
 
     docset = set(words2)
     distances = create_distance_matrix(model, dictionary, docset, all_distances)
+
+    assert sum(distances) != 0
 
     return emd(bow1, bow2, distances)
 
