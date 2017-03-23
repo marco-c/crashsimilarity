@@ -8,5 +8,8 @@ install:
     - pip install -r requirements.txt
     - pip install -r test-requirements.txt
 script:
-    - python -m unittest discover tests
+    - coverage run -m unittest discover tests
     - flake8
+after_success:
+    - bash <(curl -s https://codecov.io/bash)
+
