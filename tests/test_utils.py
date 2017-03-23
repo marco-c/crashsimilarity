@@ -25,7 +25,3 @@ class UtilsTest(unittest.TestCase):
             assert 'proto_signature' in line
             assert 'signature' in line
             assert 'uuid' in line
-
-
-if __name__ == '__main__':
-    unittest.main()

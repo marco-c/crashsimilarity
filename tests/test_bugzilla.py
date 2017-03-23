@@ -20,7 +20,3 @@ class BugzillaTest(unittest.TestCase):
         resp2 = bugzilla.get_signatures_from_bug('1308863')
         self.assertEqual(resp, crash_signatures)
         self.assertEqual(resp2, crash_signatures2)
-
-
-if __name__ == '__main__':
-    unittest.main()
