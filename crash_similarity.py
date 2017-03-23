@@ -11,6 +11,7 @@ import time
 
 import gensim
 import numpy as np
+
 import pyximport
 from pyemd import emd
 
@@ -93,6 +94,8 @@ def train_model(corpus):
 
     model.build_vocab(corpus)
 
+    print("Vocab Length{}".format(len(model.wv.vocab)))
+
     t = time.time()
     print('Training model...')
     model.train(corpus)
@@ -133,6 +136,8 @@ def wmdistance(model, words1, words2, all_distances):
 
     docset = set(words2)
     distances = create_distance_matrix(model, dictionary, docset, all_distances)
+
+    assert sum(distances) != 0
 
     return emd(bow1, bow2, distances)
 
@@ -212,9 +217,9 @@ def signature_similarity(model, paths, signature1, signature2):
         for doc2 in traces2:
             words2 = [word for word in preprocess(doc2) if word in model]
 
-            if words1 == words2 or frozenset([frozenset(words1), frozenset(words2)]) in already_processed:
+            if words1 == words2 or frozenset([tuple(words1), tuple(words2)]) in already_processed:
                 continue
-            already_processed.add(frozenset([frozenset(words1), frozenset(words2)]))
+            already_processed.add(frozenset([tuple(words1), tuple(words2)]))
 
             similarities.append((doc1, doc2, wmdistance(model, words1, words2, distances)))
 
