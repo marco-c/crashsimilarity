@@ -75,7 +75,7 @@ class CrashSimilarityTest(unittest.TestCase):
         for f, expected in funcs:
             self.assertEqual(crash_similarity.clean_func(f), expected)
 
-    def test_preprocess_returns_top_ten_stack_traces(self):
+    def test_preprocess_returns_clean_stack_traces(self):
         resp = crash_similarity.preprocess(stack_trace)
         self.assertEqual(len(resp), 10)
         self.assertEqual(resp, clean_stack_traces)
