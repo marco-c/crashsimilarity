@@ -78,7 +78,7 @@ class CrashSimilarityTest(unittest.TestCase):
     def test_preprocess_returns_top_ten_stack_traces(self):
         resp = crash_similarity.preprocess(stack_trace)
         self.assertEqual(len(resp), 10)
-        self.assertEqual(resp, top_ten_stack_traces)
+        self.assertEqual(resp, clean_stack_traces)
 
     def test_should_skip_returns_correct_boolean_value(self):
         for f in funcs:
