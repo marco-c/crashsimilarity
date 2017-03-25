@@ -8,6 +8,7 @@ import multiprocessing
 import os
 import random
 import time
+import logging
 
 import gensim
 import numpy as np
@@ -20,6 +21,7 @@ import utils
 from download_data import download_stack_traces_for_signature
 
 pyximport.install()
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 def clean_func(func):
@@ -82,8 +84,8 @@ def train_model(corpus):
 
     random.shuffle(corpus)
 
-    print('CORPUS LENGTH: ' + str(len(corpus)))
-    print(corpus[0])
+    logging.debug('CORPUS LENGTH: ' + str(len(corpus)))
+    logging.debug(corpus[0])
 
     try:
         workers = multiprocessing.cpu_count()
@@ -94,12 +96,12 @@ def train_model(corpus):
 
     model.build_vocab(corpus)
 
-    print("Vocab Length{}".format(len(model.wv.vocab)))
+    logging.debug("Vocab Length{}".format(len(model.wv.vocab)))
 
     t = time.time()
-    print('Training model...')
+    logging.debug('Training model...')
     model.train(corpus)
-    print('Model trained in ' + str(time.time() - t) + ' s.')
+    logging.debug('Model trained in ' + str(time.time() - t) + ' s.')
 
     model.save('stack_traces_model.pickle')
 
@@ -172,7 +174,7 @@ def top_similar_traces(model, corpus, stack_trace, top=10):
         distances.append((doc_id, rwmd))
 
     distances.sort(key=lambda v: v[1])
-    print('First part done in ' + str(time.time() - t) + ' s.')
+    logging.debug('First part done in ' + str(time.time() - t) + ' s.')
 
     t = time.time()
     confirmed_distances_ids = []
@@ -181,8 +183,8 @@ def top_similar_traces(model, corpus, stack_trace, top=10):
     for i, (doc_id, rwmd_distance) in enumerate(distances):
         # Stop once we have 'top' confirmed distances and all the rwmd lower bounds are higher than the smallest top confirmed distance.
         if len(confirmed_distances) >= top and rwmd_distance > confirmed_distances[top - 1]:
-            print('stopping at ' + str(i))
-            print(top)
+            logging.debug('stopping at ' + str(i))
+            logging.debug(top)
             break
 
         # TODO: replace this with inline code (to avoid recalculating the distances).
@@ -197,7 +199,7 @@ def top_similar_traces(model, corpus, stack_trace, top=10):
 
     similarities = zip(confirmed_distances_ids, confirmed_distances)
 
-    print('Query done in ' + str(time.time() - t) + ' s.')
+    logging.debug('Query done in ' + str(time.time() - t) + ' s.')
 
     return sorted(similarities, key=lambda v: v[1])[:top]
 
@@ -235,4 +237,4 @@ if __name__ == '__main__':
 
     model = train_model(corpus)
 
-    print(dict([(model.index2word[i], similarity) for i, similarity in enumerate(model.similar_by_word('igdumd32.dll@0x', topn=False))])['igdumd64.dll@0x'])
+    logging.debug(dict([(model.index2word[i], similarity) for i, similarity in enumerate(model.similar_by_word('igdumd32.dll@0x', topn=False))])['igdumd64.dll@0x'])
