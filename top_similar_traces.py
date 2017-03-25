@@ -26,7 +26,7 @@ if __name__ == '__main__':
     model = crash_similarity.train_model(corpus)
 
     # gets the stack_trace corresponding to the crash_id (input by the user as an argument)
-    stack_trace = crash_similarity.get_stack_trace_from_crashid(args.crash_id)
+    stack_trace = download_data.download_stack_trace_for_crashid(args.crash_id)
 
     # returns the top similar stack traces (number of stack traces returned = args.top)
     similarities = crash_similarity.top_similar_traces(model, corpus, stack_trace, args.top)
