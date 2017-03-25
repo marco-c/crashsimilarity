@@ -3,6 +3,10 @@
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import crash_similarity
+import logging
+
+
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 if __name__ == '__main__':
@@ -14,22 +18,22 @@ if __name__ == '__main__':
 
     model = crash_similarity.train_model(corpus)
 
-    print('mozilla::net::NeckoParent::GetValidatedAppInfo vs mozilla::net::CrashWithReason')
+    logging.debug('mozilla::net::NeckoParent::GetValidatedAppInfo vs mozilla::net::CrashWithReason')
     similarities = crash_similarity.signature_similarity(model, paths, 'mozilla::net::NeckoParent::GetValidatedAppInfo', 'mozilla::net::CrashWithReason')
-    print('Top 10')
+    logging.debug('Top 10')
     for similarity in similarities[:10]:
-        print(u'%s\n%s\n%s\n' % (similarity[2], similarity[0], similarity[1]))
-    print('Bottom 10')
+        logging.debug(u'%s\n%s\n%s\n' % (similarity[2], similarity[0], similarity[1]))
+    logging.debug('Bottom 10')
     for similarity in similarities[-10:]:
-        print(u'%s\n%s\n%s\n' % (similarity[2], similarity[0], similarity[1]))
+        logging.debug(u'%s\n%s\n%s\n' % (similarity[2], similarity[0], similarity[1]))
 
-    print('\n')
+    logging.debug('\n')
 
-    print('mozilla::MonitorAutoLock::MonitorAutoLock vs mozilla::BaseAutoLock<T>::BaseAutoLock<T>')
+    logging.debug('mozilla::MonitorAutoLock::MonitorAutoLock vs mozilla::BaseAutoLock<T>::BaseAutoLock<T>')
     similarities = crash_similarity.signature_similarity(model, paths, 'mozilla::MonitorAutoLock::MonitorAutoLock', 'mozilla::BaseAutoLock<T>::BaseAutoLock<T>')
-    print('Top 10')
+    logging.debug('Top 10')
     for similarity in similarities[:10]:
-        print(u'%s\n%s\n%s\n' % (similarity[2], similarity[0], similarity[1]))
-    print('Bottom 10')
+        logging.debug(u'%s\n%s\n%s\n' % (similarity[2], similarity[0], similarity[1]))
+    logging.debug('Bottom 10')
     for similarity in similarities[-10:]:
-        print(u'%s\n%s\n%s\n' % (similarity[2], similarity[0], similarity[1]))
+        logging.debug(u'%s\n%s\n%s\n' % (similarity[2], similarity[0], similarity[1]))
