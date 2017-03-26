@@ -183,7 +183,7 @@ def top_similar_traces(model, corpus, stack_trace, top=10, embedding_algo='doc2v
             doc_words = [model.wv.vocab[word].index for word in corpus[doc_id].words if word in model]
         elif embedding_algo == 'word2vec':
             doc_words = [model.wv.vocab[word].index for word in corpus[doc_id] if word in model]
-            
+        
         if len(doc_words) != 0:
             word_dists = all_distances[doc_words]
             rwmd = max(np.sum(np.min(word_dists, axis=0)), np.sum(np.min(word_dists, axis=1)))
