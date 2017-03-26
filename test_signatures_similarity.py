@@ -3,7 +3,6 @@
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import crash_similarity
-import logging
 
 
 if __name__ == '__main__':
