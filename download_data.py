@@ -7,6 +7,7 @@ import json
 from datetime import timedelta
 import dateutil.parser
 import utils
+import logging
 
 SCHEMA_VERSION = '1'
 
@@ -81,7 +82,7 @@ def download_day_crashes(day, product='Firefox'):
             '_facets_size': 0,
         }
 
-        print(str(day) + ' - ' + str(len(crashes)))
+        logging.debug(str(day) + ' - ' + str(len(crashes)))
 
         response = utils.get_with_retries('https://crash-stats.mozilla.com/api/SuperSearch', params=params)
         response.raise_for_status()
