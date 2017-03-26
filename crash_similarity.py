@@ -8,6 +8,7 @@ import multiprocessing
 import os
 import random
 import time
+import logging
 
 import gensim
 import numpy as np
@@ -66,6 +67,7 @@ def read_corpus(fnames, embedding_algo='doc2vec'):
         return elems
 
 
+
 def get_stack_traces_for_signature(fnames, signature, traces_num=100):
     traces = download_stack_traces_for_signature(signature, traces_num)
 
@@ -81,7 +83,7 @@ def get_stack_trace_for_uuid(uuid):
     data = download_data.download_crash(uuid)
     return data['proto_signature']
 
-
+  
 def train_model(corpus,embedding_algo='doc2vec'):
     if os.path.exists('stack_traces_' + embedding_algo + '_model.pickle') and embedding_algo == 'doc2vec'\
             and os.path.exists('stack_traces_doc2vec_model.pickle.docvecs.doctag_syn0.npy'):
@@ -91,8 +93,8 @@ def train_model(corpus,embedding_algo='doc2vec'):
         return gensim.models.Word2Vec.load('stack_traces_' + embedding_algo + '_model.pickle')
     random.shuffle(corpus)
 
-    print('CORPUS LENGTH: ' + str(len(corpus)))
-    print(corpus[0])
+    logging.debug('CORPUS LENGTH: ' + str(len(corpus)))
+    logging.debug(corpus[0])
 
     try:
         workers = multiprocessing.cpu_count()
@@ -107,10 +109,12 @@ def train_model(corpus,embedding_algo='doc2vec'):
     model.build_vocab(corpus)
     print("Vocab Length{}".format(len(model.wv.vocab)))
 
+    logging.debug("Vocab Length{}".format(len(model.wv.vocab)))
+
     t = time.time()
-    print('Training model...')
+    logging.info('Training model...')
     model.train(corpus)
-    print('Model trained in ' + str(time.time() - t) + ' s.')
+    logging.info('Model trained in ' + str(time.time() - t) + ' s.')
 
     model.save('stack_traces_' + embedding_algo + '_model.pickle')
 
@@ -153,6 +157,7 @@ def wmdistance(model, words1, words2, all_distances):
     return emd(bow1, bow2, distances)
 
 
+
 def top_similar_traces(model, corpus, stack_trace, top=10, embedding_algo='doc2vec'):
     model.init_sims(replace=True)
 
@@ -168,8 +173,7 @@ def top_similar_traces(model, corpus, stack_trace, top=10, embedding_algo='doc2v
     '''
 
     # Cos-similarity
-    all_distances = np.array(1.0 - np.dot(model.wv.syn0norm, model.wv.syn0norm[
-        [model.wv.vocab[word].index for word in words_to_test_clean]].transpose()), dtype=np.double)
+    all_distances = np.array(1.0 - np.dot(model.wv.syn0norm, model.wv.syn0norm[[model.wv.vocab[word].index for word in words_to_test_clean]].transpose()), dtype=np.double)
 
     # Relaxed Word Mover's Distance for selecting
     t = time.time()
@@ -179,7 +183,7 @@ def top_similar_traces(model, corpus, stack_trace, top=10, embedding_algo='doc2v
             doc_words = [model.wv.vocab[word].index for word in corpus[doc_id].words if word in model]
         elif embedding_algo == 'word2vec':
             doc_words = [model.wv.vocab[word].index for word in corpus[doc_id] if word in model]
-
+            
         if len(doc_words) != 0:
             word_dists = all_distances[doc_words]
             rwmd = max(np.sum(np.min(word_dists, axis=0)), np.sum(np.min(word_dists, axis=1)))
@@ -188,7 +192,7 @@ def top_similar_traces(model, corpus, stack_trace, top=10, embedding_algo='doc2v
         distances.append((doc_id, rwmd))
 
     distances.sort(key=lambda v: v[1])
-    print('First part done in ' + str(time.time() - t) + ' s.')
+    logging.info('First part done in ' + str(time.time() - t) + ' s.')
 
     t = time.time()
     confirmed_distances_ids = []
@@ -197,8 +201,8 @@ def top_similar_traces(model, corpus, stack_trace, top=10, embedding_algo='doc2v
     for i, (doc_id, rwmd_distance) in enumerate(distances):
         # Stop once we have 'top' confirmed distances and all the rwmd lower bounds are higher than the smallest top confirmed distance.
         if len(confirmed_distances) >= top and rwmd_distance > confirmed_distances[top - 1]:
-            print('stopping at ' + str(i))
-            print(top)
+            logging.debug('stopping at ' + str(i))
+            logging.debug(top)
             break
 
         # TODO: replace this with inline code (to avoid recalculating the distances).
@@ -217,7 +221,7 @@ def top_similar_traces(model, corpus, stack_trace, top=10, embedding_algo='doc2v
 
     similarities = zip(confirmed_distances_ids, confirmed_distances)
 
-    print('Query done in ' + str(time.time() - t) + ' s.')
+    logging.info('Query done in ' + str(time.time() - t) + ' s.')
 
     return sorted(similarities, key=lambda v: v[1])[:top]
 
@@ -232,8 +236,7 @@ def signature_similarity(model, paths, signature1, signature2):
 
     for doc1 in traces1:
         words1 = np.unique([word for word in preprocess(doc1) if word in model]).tolist()
-        distances = np.array(1.0 - np.dot(model.wv.syn0norm, model.wv.syn0norm[
-            [model.wv.vocab[word].index for word in words1]].transpose()), dtype=np.double)
+        distances = np.array(1.0 - np.dot(model.wv.syn0norm, model.wv.syn0norm[[model.wv.vocab[word].index for word in words1]].transpose()), dtype=np.double)
 
         for doc2 in traces2:
             words2 = [word for word in preprocess(doc2) if word in model]

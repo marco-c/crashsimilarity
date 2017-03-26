@@ -7,6 +7,7 @@ import json
 from datetime import timedelta
 import dateutil.parser
 import utils
+import logging
 
 SCHEMA_VERSION = '1'
 
@@ -81,7 +82,7 @@ def download_day_crashes(day, product='Firefox'):
             '_facets_size': 0,
         }
 
-        print(str(day) + ' - ' + str(len(crashes)))
+        logging.debug(str(day) + ' - ' + str(len(crashes)))
 
         response = utils.get_with_retries('https://crash-stats.mozilla.com/api/SuperSearch', params=params)
         response.raise_for_status()
@@ -131,3 +132,30 @@ def get_paths(days, product='Firefox'):
         last_day -= timedelta(1)
 
     return [get_path(last_day - timedelta(i), product) for i in range(0, days)]
+
+
+def download_stack_trace_for_crashid(crash_id):
+    url = 'https://crash-stats.mozilla.com/api/ProcessedCrash'
+    params = {
+        'crash_id': crash_id
+    }
+    res = utils.get_with_retries(url, params)
+    return res.json()['proto_signature']
+
+
+def download_stack_traces_for_signature(signature, traces_num=100):
+    url = 'https://crash-stats.mozilla.com/api/SuperSearch'
+    params = {
+        'signature': '=' + signature,
+        '_facets': ['proto_signature'],
+        '_facets_size': traces_num,
+        '_results_number': 0
+    }
+    res = utils.get_with_retries(url, params)
+    records = res.json()['facets']['proto_signature']
+
+    traces = set()
+    for record in records:
+        traces.add(record['term'])
+
+    return traces
