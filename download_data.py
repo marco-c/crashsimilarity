@@ -9,7 +9,6 @@ import dateutil.parser
 import utils
 import logging
 
-logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s')
 SCHEMA_VERSION = '1'
 
 
