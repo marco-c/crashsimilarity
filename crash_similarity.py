@@ -99,9 +99,9 @@ def train_model(corpus):
     logging.debug("Vocab Length{}".format(len(model.wv.vocab)))
 
     t = time.time()
-    logging.debug('Training model...')
+    logging.info('Training model...')
     model.train(corpus)
-    logging.debug('Model trained in ' + str(time.time() - t) + ' s.')
+    logging.info('Model trained in ' + str(time.time() - t) + ' s.')
 
     model.save('stack_traces_model.pickle')
 
@@ -174,7 +174,7 @@ def top_similar_traces(model, corpus, stack_trace, top=10):
         distances.append((doc_id, rwmd))
 
     distances.sort(key=lambda v: v[1])
-    logging.debug('First part done in ' + str(time.time() - t) + ' s.')
+    logging.info('First part done in ' + str(time.time() - t) + ' s.')
 
     t = time.time()
     confirmed_distances_ids = []
@@ -199,7 +199,7 @@ def top_similar_traces(model, corpus, stack_trace, top=10):
 
     similarities = zip(confirmed_distances_ids, confirmed_distances)
 
-    logging.debug('Query done in ' + str(time.time() - t) + ' s.')
+    logging.info('Query done in ' + str(time.time() - t) + ' s.')
 
     return sorted(similarities, key=lambda v: v[1])[:top]
 
@@ -237,4 +237,4 @@ if __name__ == '__main__':
 
     model = train_model(corpus)
 
-    logging.debug(dict([(model.index2word[i], similarity) for i, similarity in enumerate(model.similar_by_word('igdumd32.dll@0x', topn=False))])['igdumd64.dll@0x'])
+    print(dict([(model.index2word[i], similarity) for i, similarity in enumerate(model.similar_by_word('igdumd32.dll@0x', topn=False))])['igdumd64.dll@0x'])
