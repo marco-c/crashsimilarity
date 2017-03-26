@@ -25,4 +25,4 @@ def get_signatures_from_bug(bug_id):
 
 
 if __name__ == "__main__":
-    logging.debug(get_signatures_from_bug('1333486'))
+    print(get_signatures_from_bug('1333486'))
