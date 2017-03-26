@@ -3,10 +3,6 @@
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import crash_similarity
-import logging
-
-
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 if __name__ == '__main__':
@@ -18,22 +14,22 @@ if __name__ == '__main__':
 
     model = crash_similarity.train_model(corpus)
 
-    logging.debug('mozilla::net::CrashWithReason vs itself')
+    print('mozilla::net::CrashWithReason vs itself')
     similarities = crash_similarity.signature_similarity(model, paths, 'mozilla::net::CrashWithReason', 'mozilla::net::CrashWithReason')
-    logging.debug('Top 10')
+    print('Top 10')
     for similarity in similarities[:10]:
-        logging.debug(u'%s\n%s\n%s\n' % (similarity[2], similarity[0], similarity[1]))
-    logging.debug('Bottom 10')
+        print(u'%s\n%s\n%s\n' % (similarity[2], similarity[0], similarity[1]))
+    print('Bottom 10')
     for similarity in similarities[-10:]:
-        logging.debug(u'%s\n%s\n%s\n' % (similarity[2], similarity[0], similarity[1]))
+        print(u'%s\n%s\n%s\n' % (similarity[2], similarity[0], similarity[1]))
 
-    logging.debug('\n')
+    print('\n')
 
-    logging.debug('mozilla::MonitorAutoLock::MonitorAutoLock vs itself')
+    print('mozilla::MonitorAutoLock::MonitorAutoLock vs itself')
     similarities = crash_similarity.signature_similarity(model, paths, 'mozilla::MonitorAutoLock::MonitorAutoLock', 'mozilla::MonitorAutoLock::MonitorAutoLock')
-    logging.debug('Top 10')
+    print('Top 10')
     for similarity in similarities[:10]:
-        logging.debug(u'%s\n%s\n%s\n' % (similarity[2], similarity[0], similarity[1]))
-    logging.debug('Bottom 10')
+        print(u'%s\n%s\n%s\n' % (similarity[2], similarity[0], similarity[1]))
+    print('Bottom 10')
     for similarity in similarities[-10:]:
-        logging.debug(u'%s\n%s\n%s\n' % (similarity[2], similarity[0], similarity[1]))
+        print(u'%s\n%s\n%s\n' % (similarity[2], similarity[0], similarity[1]))
