@@ -21,7 +21,7 @@ import utils
 from download_data import download_stack_traces_for_signature
 
 pyximport.install()
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 def clean_func(func):
