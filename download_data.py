@@ -9,7 +9,7 @@ import dateutil.parser
 import utils
 import logging
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s')
 SCHEMA_VERSION = '1'
 
 
