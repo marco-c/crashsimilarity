@@ -3,9 +3,6 @@
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import utils
-import logging
-
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 def get_signatures_from_bug(bug_id):
