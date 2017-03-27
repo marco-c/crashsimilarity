@@ -4,6 +4,8 @@
 
 import unittest
 import json
+import multiprocessing
+import requests_mock
 import crash_similarity
 import utils
 
@@ -20,8 +22,8 @@ class CrashSimilarityTest(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         self.paths = ['tests/test.json']
-        corpus = crash_similarity.read_corpus(self.paths)
-        self.model = crash_similarity.train_model(corpus)
+        self.corpus = crash_similarity.read_corpus(self.paths)
+        self.model = crash_similarity.train_model(self.corpus)
 
     # Test if equal reports have distance 0 and different reports have difference greater than 0
     @unittest.expectedFailure
@@ -91,10 +93,23 @@ class CrashSimilarityTest(unittest.TestCase):
                 assert data['proto_signature'] in resp
 
     def test_get_stack_trace_for_uuid(self):
-        uuid = '90dcebb6-f711-4a8b-9e68-5abf72161109'
         proto_signature = 'js::GCMarker::processMarkStackTop | js::GCMarker::drainMarkStack | js::gc::GCRuntime::incrementalCollectSlice | js::gc::GCRuntime::gcCycle | js::gc::GCRuntime::collect | JS::StartIncrementalGC | nsJSContext::GarbageCollectNow | nsTimerImpl::Fire | nsTimerEvent::Run | nsThread::ProcessNextEvent | NS_ProcessPendingEvents | nsBaseAppShell::NativeEventCallback | nsAppShell::ProcessGeckoEvents | CoreFoundation@0xa74b0 | CoreFoundation@0x8861c | CoreFoundation@0x87b15 | CoreFoundation@0x87513 | HIToolbox@0x312ab | HIToolbox@0x310e0 | HIToolbox@0x30f15 | AppKit@0x476cc | AppKit@0x7be82f | CoreFoundation@0x9e3a1 | AppKit@0xc56609 | AppKit@0xc9e7f7 | AppKit@0xc9e387 | AppKit@0xc567a9 | AppKit@0xc5867b | AppKit@0xc57ccc | AppKit@0xc5a9c2 | AppKit@0x47c2ed | AppKit@0x47c304 | AppKit@0xcdcf03 | AppKit@0xc56e2b | AppKit@0xc579af | AppKit@0xcdcee2 | AppKit@0xc5e77b | AppKit@0xc9897a | AppKit@0xc9c88c | AppKit@0xc7f10e'
-        resp = crash_similarity.get_stack_trace_for_uuid(uuid)
-        self.assertEqual(resp, proto_signature)
+        uuid = '90dcebb6-f711-4a8b-9e68-5abf72161109'
+        with requests_mock.Mocker() as m:
+            m.get('https://crash-stats.mozilla.com/api/ProcessedCrash', json={'proto_signature': proto_signature})
+            resp = crash_similarity.get_stack_trace_for_uuid(uuid)
+            self.assertEqual(resp, proto_signature)
+
+    def test_train_model(self):
+        resp = crash_similarity.train_model(self.corpus)
+        try:
+            workers = multiprocessing.cpu_count()
+        except:
+            workers = 2
+        self.assertEqual(workers, resp.workers)
+        self.assertEqual(8, resp.window)
+        self.assertEqual(20, resp.iter)
+        self.assertEqual(101, len(resp.wv.vocab))
 
 
 if __name__ == '__main__':
