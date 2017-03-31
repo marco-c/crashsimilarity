@@ -17,6 +17,7 @@ def parse_args(args):
     parser.add_argument('--top', help='Number of top similar and different stack traces(Default 10)', default=10, type=int)
     return parser.parse_args()
 
+
 if __name__ == '__main__':
     args = parse_args(sys.argv[1:])
     # downloads some data (e.g. the past 7 days)

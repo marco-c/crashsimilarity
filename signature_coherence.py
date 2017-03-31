@@ -13,8 +13,8 @@ import argparse
 def parse_args(args):
     parser = argparse.ArgumentParser(description='Test Signature Coherence')
     parser.add_argument('--signature', required=True, help='Signature')
-    parser.add_argument('--product', required=True, help='Product for which crash data is needed to   be downloaded')
-    parser.add_argument('--top', help='Number of top similar and different stack traces(Default 10)',   default=10, type=int)
+    parser.add_argument('--product', required=True, help='Product for which crash data is needed to be downloaded')
+    parser.add_argument('--top', help='Number of top similar and different stack traces(Default 10)', default=10, type=int)
     return parser.parse_args(args)
 
 
@@ -33,7 +33,7 @@ if __name__ == '__main__':
 
     # Evaluates the similarity between the stack traces in a given signature.
     print(args.signature + ' \n')
-    
+
     similarities = crash_similarity.signature_similarity(model, paths, args.signature, args.signature)
     print('Top ' + str(args.top))
     for similarity in similarities[:args.top]:

@@ -7,6 +7,7 @@ import crash_similarity
 import argparse
 import sys
 
+
 def parse_args(args):
     parser = argparse.ArgumentParser(description='Test similarities between two signatures')
     parser.add_argument('-1', '--one', required=True, help='First signature')
