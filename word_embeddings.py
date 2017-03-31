@@ -8,6 +8,7 @@ import multiprocessing
 import os
 import random
 import time
+import logging
 
 import gensim
 import numpy as np
@@ -31,18 +32,18 @@ class EmbeddingAlgo(object):
 
     def __init__(self, path):
         self.fnames = path
-        self.corpus = self.read_corpus()
-        self.model = self.train_model()
+        self.corpus = self._read_corpus()
+        self.model = self._train_model()
 
     @abstractmethod
-    def read_corpus(self):
+    def _read_corpus(self):
         pass
 
-    def train_model(self):
+    def _train_model(self):
         pass
 
     @staticmethod
-    def wmdistance(model, words1, words2, all_distances):
+    def _wmdistance(model, words1, words2, all_distances):
         # Code modified from https://github.com/RaRe-Technologies/gensim/blob/4f0e2ae/gensim/models/keyedvectors.py#L339
         dictionary = gensim.corpora.Dictionary(documents=[words1, words2])
         vocab_len = len(dictionary)
@@ -103,7 +104,7 @@ class EmbeddingAlgo(object):
 
 class Word2Vec(EmbeddingAlgo):
 
-    def read_corpus(self):
+    def _read_corpus(self):
         elems = []
         already_selected = set()
         for line in utils.read_files(self.fnames):
@@ -121,13 +122,13 @@ class Word2Vec(EmbeddingAlgo):
 
         return elems
 
-    def train_model(self):
+    def _train_model(self):
         if os.path.exists('stack_traces_word2vec_model.pickle'):
             return gensim.models.Word2Vec.load('stack_traces_word2vec_model.pickle')
         random.shuffle(self.corpus)
 
-        print('CORPUS LENGTH: ' + str(len(self.corpus)))
-        print(self.corpus[0])
+        logging.debug('CORPUS LENGTH: ' + str(len(self.corpus)))
+        logging.debug(self.corpus[0])
 
         try:
             workers = multiprocessing.cpu_count()
@@ -137,12 +138,12 @@ class Word2Vec(EmbeddingAlgo):
         model = gensim.models.Word2Vec(size=100, window=8, iter=20, workers=workers)
 
         model.build_vocab(self.corpus)
-        print("Vocab Length{}".format(len(model.wv.vocab)))
+        logging.debug("Vocab Length{}".format(len(model.wv.vocab)))
 
         t = time.time()
-        print('Training model...')
+        logging.info('Training model...')
         model.train(self.corpus)
-        print('Model trained in ' + str(time.time() - t) + ' s.')
+        logging.info('Model trained in ' + str(time.time() - t) + ' s.')
 
         model.save('stack_traces_word2vec_model.pickle')
         return model
@@ -180,7 +181,7 @@ class Word2Vec(EmbeddingAlgo):
             distances.append((doc_id, rwmd))
 
         distances.sort(key=lambda v: v[1])
-        print('First part done in ' + str(time.time() - t) + ' s.')
+        logging.info('First part done in ' + str(time.time() - t) + ' s.')
 
         t = time.time()
         confirmed_distances_ids = []
@@ -189,8 +190,8 @@ class Word2Vec(EmbeddingAlgo):
         for i, (doc_id, rwmd_distance) in enumerate(distances):
             # Stop once we have 'top' confirmed distances and all the rwmd lower bounds are higher than the smallest top confirmed distance.
             if len(confirmed_distances) >= top and rwmd_distance > confirmed_distances[top - 1]:
-                print('stopping at ' + str(i))
-                print(top)
+                logging.debug('stopping at ' + str(i))
+                logging.debug(top)
                 break
 
             # TODO: replace this with inline code (to avoid recalculating the distances).
@@ -205,13 +206,13 @@ class Word2Vec(EmbeddingAlgo):
             confirmed_distances_ids.insert(j, doc_id)
 
         similarities = zip(confirmed_distances_ids, confirmed_distances)
-        print('Query done in ' + str(time.time() - t) + ' s.')
+        logging.info('Query done in ' + str(time.time() - t) + ' s.')
         return sorted(similarities, key=lambda v: v[1])[:top]
 
 
 class Doc2Vec(EmbeddingAlgo):
 
-    def read_corpus(self):
+    def _read_corpus(self):
         elems = []
         already_selected = set()
         for line in utils.read_files(self.fnames):
@@ -228,14 +229,14 @@ class Doc2Vec(EmbeddingAlgo):
 
         return [gensim.models.doc2vec.TaggedDocument(trace, [i, signature]) for i, (trace, signature) in enumerate(elems)]
 
-    def train_model(self):
+    def _train_model(self):
         if os.path.exists('stack_traces_doc2vec_model.pickle') and \
                 os.path.exists('stack_traces_doc2vec_model.pickle.docvecs.doctag_syn0.npy'):
             return gensim.models.Doc2Vec.load('stack_traces_doc2vec_model.pickle')
         random.shuffle(self.corpus)
 
-        print('CORPUS LENGTH: ' + str(len(self.corpus)))
-        print(self.corpus[0])
+        logging.debug('CORPUS LENGTH: ' + str(len(self.corpus)))
+        logging.debug(self.corpus[0])
 
         try:
             workers = multiprocessing.cpu_count()
@@ -245,12 +246,12 @@ class Doc2Vec(EmbeddingAlgo):
         model = gensim.models.Doc2Vec(size=100, window=8, iter=20, workers=workers)
 
         model.build_vocab(self.corpus)
-        print("Vocab Length{}".format(len(model.wv.vocab)))
+        logging.debug("Vocab Length{}".format(len(model.wv.vocab)))
 
         t = time.time()
-        print('Training model...')
+        logging.info('Training model...')
         model.train(self.corpus)
-        print('Model trained in ' + str(time.time() - t) + ' s.')
+        logging.info('Model trained in ' + str(time.time() - t) + ' s.')
 
         model.save('stack_traces_doc2vec_model.pickle')
         return model
@@ -288,7 +289,7 @@ class Doc2Vec(EmbeddingAlgo):
             distances.append((doc_id, rwmd))
 
         distances.sort(key=lambda v: v[1])
-        print('First part done in ' + str(time.time() - t) + ' s.')
+        logging.info('First part done in ' + str(time.time() - t) + ' s.')
 
         t = time.time()
         confirmed_distances_ids = []
@@ -297,8 +298,8 @@ class Doc2Vec(EmbeddingAlgo):
         for i, (doc_id, rwmd_distance) in enumerate(distances):
             # Stop once we have 'top' confirmed distances and all the rwmd lower bounds are higher than the smallest top confirmed distance.
             if len(confirmed_distances) >= top and rwmd_distance > confirmed_distances[top - 1]:
-                print('stopping at ' + str(i))
-                print(top)
+                logging.info('stopping at ' + str(i))
+                logging.info(top)
                 break
 
             # TODO: replace this with inline code (to avoid recalculating the distances).
@@ -313,5 +314,5 @@ class Doc2Vec(EmbeddingAlgo):
             confirmed_distances_ids.insert(j, doc_id)
 
         similarities = zip(confirmed_distances_ids, confirmed_distances)
-        print('Query done in ' + str(time.time() - t) + ' s.')
+        logging.info('Query done in ' + str(time.time() - t) + ' s.')
         return sorted(similarities, key=lambda v: v[1])[:top]
