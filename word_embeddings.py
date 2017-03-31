@@ -12,7 +12,6 @@ import time
 import gensim
 import numpy as np
 
-import pyximport
 from pyemd import emd
 from abc import ABCMeta, abstractmethod
 
@@ -316,7 +315,3 @@ class Doc2Vec(EmbeddingAlgo):
         similarities = zip(confirmed_distances_ids, confirmed_distances)
         print('Query done in ' + str(time.time() - t) + ' s.')
         return sorted(similarities, key=lambda v: v[1])[:top]
-
-
-
-
