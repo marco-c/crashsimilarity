@@ -1,6 +1,6 @@
 import unittest
 
-from crashsimilarity.cache import Cache
+from refactored.cache import Cache
 
 
 class TestCache(unittest.TestCase):
