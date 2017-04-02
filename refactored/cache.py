@@ -1,4 +1,5 @@
 import json
+import pickle
 
 import utils
 
@@ -31,6 +32,25 @@ class Cache(object):
                 already_selected.add(frozenset(processed))
         return Cache(traces=traces)
 
+    @staticmethod
+    def try_load_or_build(stream):
+        try:
+            return Cache.load()
+        except:
+            return Cache.build(stream)
+
+    def dump_traces_on_disk(self, file_name='traces_cache.pickle'):
+        pickle.dump(self.traces, open(file_name, 'wb'))
+
+    @staticmethod
+    def load():
+        traces = pickle.load(open('traces_cache.pickle', 'rb'))
+        try:
+            downloads = pickle.load(open('downloads_cache.pickle', 'rb'))
+        except:
+            downloads = dict()
+        return Cache(traces, downloads)
+
     def update_downloader_cache(self, key, value):
-        """update `self.downloader_cache` and flush it to disk"""
-        pass
+        self.downloader_cache[key] = value
+        pickle.dump(self.downloader_cache, open('downloads_cache.pickle', 'wb'))
