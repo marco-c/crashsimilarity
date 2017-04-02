@@ -9,7 +9,7 @@ from refactored.models.base import Algorithm
 
 
 class SlowWMDistanceModel(Algorithm):
-    def __init__(self) -> None:
+    def __init__(self):
         self.model = None
         self.corpus = []
         self.index2signature = []  # signature == document tag
