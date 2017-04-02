@@ -26,6 +26,11 @@ class Cache(object):
                 continue
             processed = utils.preprocess(data['proto_signature'])
             if frozenset(processed) not in already_selected:
+                # TODO: named tuple?
                 traces.append((processed, data['signature'], data['uuid']))
                 already_selected.add(frozenset(processed))
         return Cache(traces=traces)
+
+    def update_downloader_cache(self, key, value):
+        """update `self.downloader_cache` and flush it to disk"""
+        pass
