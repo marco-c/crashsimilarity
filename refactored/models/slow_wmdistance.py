@@ -48,11 +48,11 @@ class SlowWMDistanceModel(Algorithm):
 
         self.model.save('SlowWMDistanceModel.pickle')
 
-    def signatures_similarity(self, signature1, signature2):
-        pass
+    def signatures_similarity(self, signature1, signature2):  # TODO
+        raise NotImplementedError
 
     def signature_coherence(self, signature):
-        pass
+        raise NotImplementedError
 
     def top_similar_traces(self, stack_trace):
-        pass
+        raise NotImplementedError
