@@ -7,14 +7,19 @@
 import download_data
 import crash_similarity
 import argparse
+import sys
 
-parser = argparse.ArgumentParser(description='Returns the top ten similar stack traces')
-parser.add_argument('--crash_id', required=True, help='crash_id corresponding to the stack trace')
-parser.add_argument('--product', required=True, help='Product for which crash data is needed to be downloaded')
-parser.add_argument('--top', help='Number of top similar and different stack traces(Default 10)', default=10, type=int)
-args = parser.parse_args()
+
+def parse_args(args):
+    parser = argparse.ArgumentParser(description='Returns the top ten similar stack traces')
+    parser.add_argument('--crash_id', required=True, help='crash_id corresponding to the stack trace')
+    parser.add_argument('--product', required=True, help='Product for which crash data is needed to be downloaded')
+    parser.add_argument('--top', help='Number of top similar and different stack traces(Default 10)', default=10, type=int)
+    return parser.parse_args()
+
 
 if __name__ == '__main__':
+    args = parse_args(sys.argv[1:])
     # downloads some data (e.g. the past 7 days)
     download_data.download_crashes(days=7, product=args.product)
     paths = download_data.get_paths(days=7, product=args.product)
