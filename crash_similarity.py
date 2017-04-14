@@ -51,4 +51,4 @@ if __name__ == '__main__':
     # paths = download_data.get_paths(days=7, product='Firefox')
     paths = ['crashsimilarity_data/firefox-crashes-2016-11-09.json.gz', 'crashsimilarity_data/firefox-crashes-2016-11-08.json.gz', 'crashsimilarity_data/firefox-crashes-2016-11-07.json.gz', 'crashsimilarity_data/firefox-crashes-2016-11-06.json.gz', 'crashsimilarity_data/firefox-crashes-2016-11-05.json.gz', 'crashsimilarity_data/firefox-crashes-2016-11-04.json.gz', 'crashsimilarity_data/firefox-crashes-2016-11-03.json.gz']
     doc2vec = word_embeddings.Doc2Vec(paths)
-    print doc2vec.model.similar_by_word('igdumd32.dll@0x', topn=10)
+    print(dict([(doc2vec.model.wv.index2word[i], similarity) for i, similarity in enumerate(doc2vec.model.wv.similar_by_word('igdumd32.dll@0x', topn=False))])['igdumd64.dll@0x'])
