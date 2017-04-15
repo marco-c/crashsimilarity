@@ -19,7 +19,7 @@ class Cache(object):
         def should_skip(stack_trace):
             return any(call in stack_trace for call in ['xul.dll@', 'XUL@', 'libxul.so@'])
 
-        logging.debug('building cache from stream...')
+        logging.info('building cache from stream...')
 
         traces = []
         already_selected = set()
@@ -46,18 +46,18 @@ class Cache(object):
 
     def _dump_traces_on_disk(self, file_name='traces_cache.pickle'):
         pickle.dump(self.traces, open(file_name, 'wb'))
-        logging.debug('traces dumped on disk')
+        logging.info('traces dumped on disk')
 
     @staticmethod
     def _load():
         try:
             traces = pickle.load(open('traces_cache.pickle', 'rb'))
-            logging.debug('traces cache read from disk')
+            logging.info('traces cache read from disk')
         except:
             traces = list()
         try:
             downloads = pickle.load(open('downloads_cache.pickle', 'rb'))
-            logging.debug('downloads cache read from disk')
+            logging.info('downloads cache read from disk')
         except:
             downloads = dict()
         return traces, downloads

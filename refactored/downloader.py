@@ -1,4 +1,5 @@
 from datetime import timedelta
+import logging
 
 import utils
 
@@ -14,6 +15,7 @@ class Downloader(object):
 
         key = ('traces', signature, from_date)
         if self.cache and key in self.cache.downloader_cache:
+            logging.debug('get data from cache')
             return self.cache.downloader_cache[key]
 
         params = {
