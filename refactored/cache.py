@@ -1,4 +1,5 @@
 import json
+import logging
 import pickle
 
 import utils
@@ -14,10 +15,11 @@ class Cache(object):
     def build(stream):
         """build from downloaded archives"""
 
-        # TODO: is it possible to have different `signature`s for one `proto_signature` ?
         # Exclude stack traces without symbols.
         def should_skip(stack_trace):
             return any(call in stack_trace for call in ['xul.dll@', 'XUL@', 'libxul.so@'])
+
+        logging.debug('building cache from stream...')
 
         traces = []
         already_selected = set()
@@ -28,28 +30,37 @@ class Cache(object):
             processed = utils.preprocess(data['proto_signature'])
             if frozenset(processed) not in already_selected:
                 # TODO: named tuple?
-                traces.append((processed, data['signature'], data['uuid']))
+                traces.append((processed, data['signature'].lower(), data['uuid']))
                 already_selected.add(frozenset(processed))
         return Cache(traces=traces)
 
     @staticmethod
     def try_load_or_build(stream):
-        try:
-            return Cache.load()
-        except:
-            return Cache.build(stream)
+        traces, downloads = Cache._load()
+        if not traces:
+            cache = Cache.build(stream)
+            cache._dump_traces_on_disk()
+            cache.downloader_cache = downloads
+            return cache
+        return Cache(traces, downloads)
 
-    def dump_traces_on_disk(self, file_name='traces_cache.pickle'):
+    def _dump_traces_on_disk(self, file_name='traces_cache.pickle'):
         pickle.dump(self.traces, open(file_name, 'wb'))
+        logging.debug('traces dumped on disk')
 
     @staticmethod
-    def load():
-        traces = pickle.load(open('traces_cache.pickle', 'rb'))
+    def _load():
+        try:
+            traces = pickle.load(open('traces_cache.pickle', 'rb'))
+            logging.debug('traces cache read from disk')
+        except:
+            traces = list()
         try:
             downloads = pickle.load(open('downloads_cache.pickle', 'rb'))
+            logging.debug('downloads cache read from disk')
         except:
             downloads = dict()
-        return Cache(traces, downloads)
+        return traces, downloads
 
     def update_downloader_cache(self, key, value):
         self.downloader_cache[key] = value
