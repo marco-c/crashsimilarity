@@ -1,5 +1,6 @@
 import unittest
-import bugzilla
+
+from crashsimilarity import bugzilla
 
 
 class BugzillaTest(unittest.TestCase):

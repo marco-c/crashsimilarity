@@ -1,9 +1,10 @@
-import unittest
 import json
 import multiprocessing
+import unittest
+
 import requests_mock
-import crash_similarity
-import utils
+
+from crashsimilarity import crash_similarity, utils
 
 funcs = [('js::jit::MakeMRegExpHoistable ', 'js::jit::makemregexphoistable '), (' AppKit@0x7be82f ', ' appkit@0x'), (' __RtlUserThreadStart ', ' __rtluserthreadstart '), (' xul.dll@0x1ade7cf ', ' xul.dll@0x'), ('XUL@0x7bd20f', 'xul@0x'), ('libxul.so@0xe477b4 ', 'libxul.so@0x')]
 

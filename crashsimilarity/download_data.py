@@ -1,9 +1,11 @@
-import os
 import json
-from datetime import timedelta
-import dateutil.parser
-import utils
 import logging
+import os
+from datetime import timedelta
+
+import dateutil.parser
+
+from crashsimilarity import utils
 
 SCHEMA_VERSION = '1'
 

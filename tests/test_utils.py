@@ -1,6 +1,7 @@
-import utils
 import unittest
 from datetime import datetime
+
+from crashsimilarity import utils
 
 
 class UtilsTest(unittest.TestCase):

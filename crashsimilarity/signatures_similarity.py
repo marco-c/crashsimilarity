@@ -1,6 +1,6 @@
-import download_data
-import crash_similarity
 import argparse
+
+from crashsimilarity import download_data, crash_similarity
 
 parser = argparse.ArgumentParser(description='Test similarities between two signatures')
 parser.add_argument('-1', '--one', required=True, help='First signature')

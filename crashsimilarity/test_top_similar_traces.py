@@ -1,5 +1,4 @@
-import crash_similarity
-
+from crashsimilarity import crash_similarity
 
 if __name__ == '__main__':
     # download_data.download_crashes(days=7, product=args.product)

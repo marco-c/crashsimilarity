@@ -1,4 +1,4 @@
-import utils
+from crashsimilarity import utils
 
 
 def get_signatures_from_bug(bug_id):

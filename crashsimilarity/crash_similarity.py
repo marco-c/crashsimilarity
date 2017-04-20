@@ -1,20 +1,18 @@
 import bisect
 import json
+import logging
 import multiprocessing
 import os
 import random
 import time
-import logging
 
 import gensim
 import numpy as np
-
 import pyximport
 from pyemd import emd
 
-import download_data
-import utils
-from download_data import download_stack_traces_for_signature
+from crashsimilarity import download_data, utils
+from crashsimilarity.download_data import download_stack_traces_for_signature
 
 pyximport.install()
 

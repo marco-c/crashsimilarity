@@ -1,7 +1,7 @@
 # CLI INTERFACE THAT EVALUATES THE SIMILARITY BETWEEN STACK TRACES IN A GIVEN SIGNATURE.
-import download_data
-import crash_similarity
 import argparse
+
+from crashsimilarity import download_data, crash_similarity
 
 parser = argparse.ArgumentParser(description='Test Signature Coherence')
 parser.add_argument('--signature', required=True, help='Signature')
