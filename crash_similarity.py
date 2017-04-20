@@ -41,7 +41,7 @@ def should_skip(stack_trace):
     return 'xul.dll@' in stack_trace or 'XUL@' in stack_trace or 'libxul.so@' in stack_trace
 
 
-def read_corpus(fnames):
+def read_corpus(fnames, embedding_algo='doc2vec'):
     elems = []
     already_selected = set()
     for line in utils.read_files(fnames):
@@ -54,10 +54,17 @@ def read_corpus(fnames):
         processed = preprocess(proto_signature)
 
         if frozenset(processed) not in already_selected:
-            elems.append((processed, data['signature']))
-        already_selected.add(frozenset(processed))
+            if embedding_algo == 'doc2vec':
+                elems.append((processed, data['signature']))
+            elif embedding_algo == 'word2vec':
+                # no need for signatures, as word2vec doesn't require labeling
+                elems.append(processed)
 
-    return [gensim.models.doc2vec.TaggedDocument(trace, [i, signature]) for i, (trace, signature) in enumerate(elems)]
+    if embedding_algo == 'doc2vec':
+        return [gensim.models.doc2vec.TaggedDocument(trace, [i, signature]) for i, (trace, signature) in
+                enumerate(elems)]
+    if embedding_algo == 'word2vec':
+        return elems
 
 
 def get_stack_traces_for_signature(fnames, signature, traces_num=100):
@@ -76,11 +83,13 @@ def get_stack_trace_for_uuid(uuid):
     return data['proto_signature']
 
 
-def train_model(corpus):
-    if os.path.exists('stack_traces_model.pickle') and \
-       os.path.exists('stack_traces_model.pickle.docvecs.doctag_syn0.npy'):
-        return gensim.models.Doc2Vec.load('stack_traces_model.pickle')
+def train_model(corpus, embedding_algo='doc2vec'):
+    if os.path.exists('stack_traces_' + embedding_algo + '_model.pickle') and embedding_algo == 'doc2vec'\
+            and os.path.exists('stack_traces_doc2vec_model.pickle.docvecs.doctag_syn0.npy'):
+        return gensim.models.Doc2Vec.load('stack_traces_' + embedding_algo + '_model.pickle')
 
+    if os.path.exists('stack_traces_' + embedding_algo + '_model.pickle') and embedding_algo == 'word2vec':
+        return gensim.models.Word2Vec.load('stack_traces_' + embedding_algo + '_model.pickle')
     random.shuffle(corpus)
 
     logging.debug('CORPUS LENGTH: ' + str(len(corpus)))
@@ -91,9 +100,13 @@ def train_model(corpus):
     except:
         workers = 2
 
-    model = gensim.models.doc2vec.Doc2Vec(size=100, window=8, iter=20, workers=workers)
+    if embedding_algo == 'doc2vec':
+        model = gensim.models.doc2vec.Doc2Vec(size=100, window=8, iter=20, workers=workers)
+    elif embedding_algo == 'word2vec':
+        model = gensim.models.Word2Vec(size=100, window=8, iter=20, workers=workers)
 
     model.build_vocab(corpus)
+    print("Vocab Length{}".format(len(model.wv.vocab)))
 
     logging.debug("Vocab Length{}".format(len(model.wv.vocab)))
 
@@ -102,7 +115,7 @@ def train_model(corpus):
     model.train(corpus)
     logging.info('Model trained in ' + str(time.time() - t) + ' s.')
 
-    model.save('stack_traces_model.pickle')
+    model.save('stack_traces_' + embedding_algo + '_model.pickle')
 
     return model
 
@@ -143,7 +156,7 @@ def wmdistance(model, words1, words2, all_distances):
     return emd(bow1, bow2, distances)
 
 
-def top_similar_traces(model, corpus, stack_trace, top=10):
+def top_similar_traces(model, corpus, stack_trace, top=10, embedding_algo='doc2vec'):
     model.init_sims(replace=True)
 
     similarities = []
@@ -164,7 +177,10 @@ def top_similar_traces(model, corpus, stack_trace, top=10):
     t = time.time()
     distances = []
     for doc_id in range(0, len(corpus)):
-        doc_words = [model.wv.vocab[word].index for word in corpus[doc_id].words if word in model]
+        if embedding_algo == 'doc2vec':
+            doc_words = [model.wv.vocab[word].index for word in corpus[doc_id].words if word in model]
+        elif embedding_algo == 'word2vec':
+            doc_words = [model.wv.vocab[word].index for word in corpus[doc_id] if word in model]
         if len(doc_words) != 0:
             word_dists = all_distances[doc_words]
             rwmd = max(np.sum(np.min(word_dists, axis=0)), np.sum(np.min(word_dists, axis=1)))
@@ -189,7 +205,11 @@ def top_similar_traces(model, corpus, stack_trace, top=10):
         # TODO: replace this with inline code (to avoid recalculating the distances).
         # wmd = model.wmdistance(words_to_test, corpus[doc_id].words)                      # uses euclidian distance
 
-        doc_words_clean = [w for w in corpus[doc_id].words if w in model]
+        if embedding_algo == 'doc2vec':
+            doc_words_clean = [w for w in corpus[doc_id].words if w in model]
+        elif embedding_algo == 'word2vec':
+            doc_words_clean = [w for w in corpus[doc_id] if w in model]
+
         wmd = wmdistance(model, words_to_test_clean, doc_words_clean, all_distances)  # uses cosine distance
 
         j = bisect.bisect(confirmed_distances, wmd)
