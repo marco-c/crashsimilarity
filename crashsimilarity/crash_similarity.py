@@ -5,6 +5,7 @@ import multiprocessing
 import os
 import random
 import time
+from datetime import datetime
 
 import gensim
 import numpy as np
@@ -70,10 +71,29 @@ def get_stack_trace_for_uuid(uuid):
     return data['proto_signature']
 
 
-def train_model(corpus):
-    if os.path.exists('stack_traces_model.pickle') and \
-       os.path.exists('stack_traces_model.pickle.docvecs.doctag_syn0.npy'):
-        return gensim.models.Doc2Vec.load('stack_traces_model.pickle')
+def delete_old_models(current_date, force_train):
+    """
+    Get list of trained models inside the models directory,
+    delete all models in case of user forces new training,
+    if not, delete all models except of today's model
+    """
+    if not os.path.isdir('../models'):
+        return
+
+    if force_train:
+        old_models = [model for model in os.listdir('../models')]
+    else:
+        old_models = [model for model in os.listdir('../models') if current_date not in model]
+    for model in old_models:
+        os.remove('../models/{}'.format(model))
+
+
+def train_model(corpus, force_train=False):
+    current_date = datetime.now().strftime('%d%b%Y')
+    delete_old_models(current_date, force_train)
+
+    if os.path.exists('../models/stack_traces_' + current_date + '_model.pickle'):
+        return gensim.models.doc2vec.Doc2Vec.load('../models/stack_traces_' + current_date + '_model.pickle')
 
     random.shuffle(corpus)
 
@@ -86,9 +106,7 @@ def train_model(corpus):
         workers = 2
 
     model = gensim.models.doc2vec.Doc2Vec(size=100, window=8, iter=20, workers=workers)
-
     model.build_vocab(corpus)
-
     logging.debug("Vocab Length{}".format(len(model.wv.vocab)))
 
     t = time.time()
@@ -96,7 +114,8 @@ def train_model(corpus):
     model.train(corpus)
     logging.info('Model trained in ' + str(time.time() - t) + ' s.')
 
-    model.save('stack_traces_model.pickle')
+    utils.create_dir('../models')
+    model.save('../models/stack_traces_' + current_date + '_model.pickle')
 
     return model
 

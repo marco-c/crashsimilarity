@@ -1,4 +1,6 @@
-from datetime import datetime, timedelta
+import os
+import errno
+from datetime import datetime
 
 from smart_open import smart_open
 import requests
@@ -8,17 +10,6 @@ from requests.packages.urllib3.util.retry import Retry
 
 def utc_today():
     return datetime.utcnow().date()
-
-
-def retrain_timeout_expired(training_interval=timedelta(hours=24)):
-    with open('last_trained.txt', 'r') as f:
-        last_trained_time = datetime.strptime(f.read(), '%b %d %Y %H:%M')
-        return last_trained_time + training_interval < datetime.now()
-
-
-def save_training_time():
-    with open("last_trained.txt", "w") as f:
-        f.write(datetime.now().strftime('%b %d %Y %H:%M'))
 
 
 def get_with_retries(url, params=None, headers=None):
@@ -35,3 +26,11 @@ def read_files(file_names, open_file_function=smart_open):
         with open_file_function(name) as f:
             for line in f:
                 yield line if isinstance(line, str) else line.decode('utf8')
+
+
+def create_dir(path):
+    try:
+        os.mkdir(path)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise e
