@@ -12,8 +12,9 @@ class BaseCache(object):
         self.name = name
         self.file_name = file_name if file_name else '{}_cache.pickle'.format(self.name)
 
+    @staticmethod
     @abstractmethod
-    def build(self, data):
+    def build(data, file_name=None):
         pass
 
     def dump(self, file_name=None):
@@ -35,8 +36,8 @@ class BaseCache(object):
 
 
 class DownloaderCache(dict, BaseCache):
-    def __init__(self, **kwargs):
-        dict.__init__(self, **kwargs)
+    def __init__(self, *args, **kwargs):
+        self.update(*args, **kwargs)
         BaseCache.__init__(self, "downloader")
 
     def __setitem__(self, k, v):
@@ -46,8 +47,12 @@ class DownloaderCache(dict, BaseCache):
         except:
             pass
 
-    def build(self, data):
-        return DownloaderCache(**data)
+    @staticmethod
+    def build(data=None, file_name=None):
+        d = DownloaderCache(data) if data else DownloaderCache()
+        if file_name:
+            d.file_name = file_name
+        return d
 
 
 class TracesCache(BaseCache):
@@ -55,7 +60,8 @@ class TracesCache(BaseCache):
         BaseCache.__init__(self, "traces", file_name)
         self.traces = traces if traces else []
 
-    def build(self, stream):
+    @staticmethod
+    def build(stream, file_name=None):
         """build from downloaded archives"""
 
         # Exclude stack traces without symbols.
@@ -75,5 +81,7 @@ class TracesCache(BaseCache):
                 # TODO: named tuple?
                 traces.append((processed, data['signature'].lower(), data['uuid']))
                 already_selected.add(frozenset(processed))
-
-        return TracesCache(traces)
+        cache = TracesCache(traces)
+        if file_name:
+            cache.file_name = file_name
+        return cache
