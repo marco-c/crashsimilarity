@@ -10,6 +10,7 @@ from crashsimilarity import utils
 SCHEMA_VERSION = '1'
 
 
+# TODO: rewrite or remove this code
 def clean_old_data():
     try:
         old_schema = read_json('crashclustering_data/schema_version')[0]
@@ -20,7 +21,8 @@ def clean_old_data():
 
     for root, dirs, files in os.walk('crashclustering_data'):
         for name in files:
-            if 'schema_version' not in name and (old_schema != SCHEMA_VERSION or dateutil.parser.parse(name[-15:-5]).date() < utils.utc_today() - timedelta(MAX_AGE)):
+            if 'schema_version' not in name and (old_schema != SCHEMA_VERSION or dateutil.parser.parse(
+                    name[-15:-5]).date() < utils.utc_today() - timedelta(MAX_AGE)):
                 os.remove(os.path.join('crashclustering_data', name))
 
 
