@@ -28,6 +28,14 @@ def read_files(file_names, open_file_function=smart_open):
                 yield line if isinstance(line, str) else line.decode('utf8')
 
 
+def preprocess(stack_trace):
+    def clean(func):
+        func = func.lower().replace('\n', '')
+        return func[:func.index('@0x') + 3] if '@0x' in func else func
+
+    return [clean(f) for f in stack_trace.split(' | ')]
+
+
 def create_dir(path):
     try:
         os.mkdir(path)

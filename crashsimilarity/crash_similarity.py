@@ -14,21 +14,9 @@ from pyemd import emd
 
 from crashsimilarity import download_data, utils
 from crashsimilarity.download_data import download_stack_traces_for_signature
+from crashsimilarity.utils import preprocess
 
 pyximport.install()
-
-
-def clean_func(func):
-    func = func.lower().replace('\n', '')
-
-    if '@0x' in func:
-        return func[:func.index('@0x') + 3]
-
-    return func
-
-
-def preprocess(stack_trace):
-    return [clean_func(f) for f in stack_trace.split(' | ')][:10]  # XXX: 10 bottom frames or all of them?
 
 
 # Exclude stack traces without symbols.
