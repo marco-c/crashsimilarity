@@ -67,7 +67,7 @@ def get_stack_traces_for_signature(fnames, signature, traces_num=100):
 
 
 def get_stack_trace_for_uuid(uuid):
-    data = SocorroDownloader().download_crash_for_id(uuid)
+    data = SocorroDownloader().download_crash(uuid)
     return data['proto_signature']
 
 

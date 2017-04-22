@@ -84,7 +84,7 @@ class SocorroDownloader(Downloader):
             self._cache[key] = traces
         return traces
 
-    def download_crash_for_id(self, uuid):
+    def download_crash(self, uuid):
         key = ('crash_for_uuid', uuid, utils.utc_today())
         if self._cache and key in self._cache:
             logging.debug('get data from cache')

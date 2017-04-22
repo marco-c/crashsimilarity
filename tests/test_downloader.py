@@ -37,7 +37,7 @@ class DownloaderTest(unittest.TestCase):
         }
         socorro = SocorroDownloader(cache)
         bugzilla = BugzillaDownloader(cache)
-        self.assertEqual(socorro.download_crash_for_id('42'), 'crash for 42')
+        self.assertEqual(socorro.download_crash('42'), 'crash for 42')
         self.assertEqual(socorro.download_stack_traces_for_signature('js::whatever', period=days_42),
                          'traces for js::whatever')
         self.assertEqual(bugzilla.download_signatures('12345'), 'bug with id 12345')
@@ -57,7 +57,7 @@ class DownloaderTest(unittest.TestCase):
         with requests_mock.Mocker() as m:
             expected_signature = {'proto_signature': 'new signature'}
             m.get(socorro._PROCESSED_CRASH_URL, json=expected_signature)
-            actual = socorro.download_crash_for_id('42')
+            actual = socorro.download_crash('42')
             self.assertEqual(actual, expected_signature)
 
             response_json = {'bugs': [{'whatever': 'unused',
@@ -77,7 +77,7 @@ class DownloaderTest(unittest.TestCase):
         with self.assertRaises(Exception) as ctx:
             with requests_mock.Mocker() as m:
                 m.get(downloader._PROCESSED_CRASH_URL, [{'status_code': 404}])
-                downloader.download_crash_for_id('42')
+                downloader.download_crash('42')
             self.assertIsInstance(ctx.exception, requests.exceptions.HTTPError)
             self.assertIn(404, ctx.exception)
 
