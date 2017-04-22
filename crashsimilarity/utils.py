@@ -12,12 +12,10 @@ def utc_today():
     return datetime.utcnow().date()
 
 
-def get_with_retries(url, params=None, headers=None):
-    retries = Retry(total=16, backoff_factor=1, status_forcelist=[429])
-
+def get_with_retries(url, params=None, headers=None):  # can't be tested with requests_mock.Mocker() for unknown reason
     s = requests.Session()
-    s.mount('https://crash-stats.mozilla.com', HTTPAdapter(max_retries=retries))
-
+    s.mount('https://',
+            HTTPAdapter(max_retries=Retry(total=5, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504])))
     return s.get(url, params=params, headers=headers)
 
 
