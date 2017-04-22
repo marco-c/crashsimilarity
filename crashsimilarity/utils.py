@@ -14,8 +14,7 @@ def utc_today():
 
 def get_with_retries(url, params=None, headers=None):  # can't be tested with requests_mock.Mocker() for unknown reason
     s = requests.Session()
-    s.mount('https://',
-            HTTPAdapter(max_retries=Retry(total=5, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504])))
+    s.mount(url, HTTPAdapter(max_retries=Retry(total=5, backoff_factor=1, status_forcelist=[429])))
     return s.get(url, params=params, headers=headers)
 
 
