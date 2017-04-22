@@ -11,6 +11,6 @@ class UtilsTest(unittest.TestCase):
     def test_read_files(self):
         paths = ['tests/test.json']
         for line in utils.read_files(paths):
-            assert 'proto_signature' in line
-            assert 'signature' in line
-            assert 'uuid' in line
+            self.assertIn('proto_signature', line)
+            self.assertIn('signature', line)
+            self.assertIn('uuid', line)
