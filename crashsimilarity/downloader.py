@@ -27,8 +27,8 @@ class Downloader(object):
             '_facets_size': traces_num,
             '_results_number': 0
         }
-        res = utils.get_with_retries(self._SUPER_SEARCH_URL, params)
-        records = res.json()['facets']['proto_signature']
+        response = utils.get_with_retries(self._SUPER_SEARCH_URL, params)
+        records = self._json_or_raise(response)['facets']['proto_signature']
         traces = set([r['term'] for r in records])
 
         if self._cache:
@@ -42,7 +42,7 @@ class Downloader(object):
             return self._cache[key]
 
         params = {'crash_id': uuid}
-        crash = utils.get_with_retries(self._PROCESSED_CRASH_URL, params).json()
+        crash = self._json_or_raise(utils.get_with_retries(self._PROCESSED_CRASH_URL, params))
 
         if self._cache:
             self._cache[key] = crash
@@ -57,7 +57,7 @@ class Downloader(object):
         params = {'id': bug_id}
         response = utils.get_with_retries(self._BUGZILLA_BUG_URL, params)
         signatures = set()
-        for sig in response.json()['bugs'][0]['cf_crash_signature'].split('\r\n'):
+        for sig in self._json_or_raise(response)['bugs'][0]['cf_crash_signature'].split('\r\n'):
             pos = sig.find('[@')
             if pos != -1:
                 sig = sig[pos + 2:]
@@ -69,3 +69,8 @@ class Downloader(object):
         if self._cache:
             self._cache[key] = list(signatures)
         return list(signatures)
+
+    @staticmethod
+    def _json_or_raise(response):
+        response.raise_for_status()
+        return response.json()

@@ -1,6 +1,7 @@
 import unittest
 from datetime import timedelta
 
+import requests
 import requests_mock
 
 from crashsimilarity import utils
@@ -68,3 +69,12 @@ class DownloaderTest(unittest.TestCase):
         updated_cache[('crash_for_uuid', '42', utils.utc_today())] = expected_signature
         updated_cache[('bugzilla_bug', '239', utils.utc_today())] = 'bug with id 239'
         self.assertDictEqual(cache, updated_cache)
+
+    def test_downloader_404(self):
+        downloader = Downloader()
+        with self.assertRaises(Exception) as ctx:
+            with requests_mock.Mocker() as m:
+                m.get(downloader._PROCESSED_CRASH_URL, [{'status_code': 404}])
+                downloader.download_crash_for_id('42')
+            self.assertIsInstance(ctx.exception, requests.exceptions.HTTPError)
+            self.assertIn(404, ctx.exception)
