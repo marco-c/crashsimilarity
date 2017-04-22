@@ -6,6 +6,7 @@ from datetime import timedelta
 import dateutil.parser
 
 from crashsimilarity import utils
+from crashsimilarity.downloader import Downloader
 
 SCHEMA_VERSION = '1'
 
@@ -83,7 +84,7 @@ def download_day_crashes(day, product='Firefox'):
 
         logging.debug(str(day) + ' - ' + str(len(crashes)))
 
-        response = utils.get_with_retries('https://crash-stats.mozilla.com/api/SuperSearch', params=params)
+        response = Downloader.get_with_retries('https://crash-stats.mozilla.com/api/SuperSearch', params=params)
         response.raise_for_status()
 
         found = response.json()['hits']

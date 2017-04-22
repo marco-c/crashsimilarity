@@ -3,19 +3,10 @@ import errno
 from datetime import datetime
 
 from smart_open import smart_open
-import requests
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
 
 
 def utc_today():
     return datetime.utcnow().date()
-
-
-def get_with_retries(url, params=None, headers=None):  # can't be tested with requests_mock.Mocker() for unknown reason
-    s = requests.Session()
-    s.mount(url, HTTPAdapter(max_retries=Retry(total=5, backoff_factor=1, status_forcelist=[429])))
-    return s.get(url, params=params, headers=headers)
 
 
 def read_files(file_names, open_file_function=smart_open):

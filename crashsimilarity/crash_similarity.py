@@ -13,7 +13,7 @@ import pyximport
 from pyemd import emd
 
 from crashsimilarity import utils
-from crashsimilarity.downloader import Downloader
+from crashsimilarity.downloader import SocorroDownloader
 
 pyximport.install()
 
@@ -56,7 +56,7 @@ def read_corpus(fnames):
 
 
 def get_stack_traces_for_signature(fnames, signature, traces_num=100):
-    traces = Downloader().download_stack_traces_for_signature(signature, traces_num)
+    traces = SocorroDownloader().download_stack_traces_for_signature(signature, traces_num)
 
     for line in utils.read_files(fnames):
         data = json.loads(line)
@@ -67,7 +67,7 @@ def get_stack_traces_for_signature(fnames, signature, traces_num=100):
 
 
 def get_stack_trace_for_uuid(uuid):
-    data = Downloader().download_crash_for_id(uuid)
+    data = SocorroDownloader().download_crash_for_id(uuid)
     return data['proto_signature']
 
 
@@ -171,7 +171,8 @@ def top_similar_traces(model, corpus, stack_trace, top=10):
     '''
 
     # Cos-similarity
-    all_distances = np.array(1.0 - np.dot(model.wv.syn0norm, model.wv.syn0norm[[model.wv.vocab[word].index for word in words_to_test_clean]].transpose()), dtype=np.double)
+    all_distances = np.array(1.0 - np.dot(model.wv.syn0norm, model.wv.syn0norm[
+        [model.wv.vocab[word].index for word in words_to_test_clean]].transpose()), dtype=np.double)
 
     # Relaxed Word Mover's Distance for selecting
     t = time.time()
@@ -226,7 +227,8 @@ def signature_similarity(model, paths, signature1, signature2):
 
     for doc1 in traces1:
         words1 = np.unique([word for word in preprocess(doc1) if word in model]).tolist()
-        distances = np.array(1.0 - np.dot(model.wv.syn0norm, model.wv.syn0norm[[model.wv.vocab[word].index for word in words1]].transpose()), dtype=np.double)
+        distances = np.array(1.0 - np.dot(model.wv.syn0norm, model.wv.syn0norm[
+            [model.wv.vocab[word].index for word in words1]].transpose()), dtype=np.double)
 
         for doc2 in traces2:
             words2 = [word for word in preprocess(doc2) if word in model]
@@ -243,8 +245,15 @@ def signature_similarity(model, paths, signature1, signature2):
 if __name__ == '__main__':
     # download_data.download_crashes(days=7, product='Firefox')
     # paths = download_data.get_paths(days=7, product='Firefox')
-    paths = ['../crashsimilarity_data/firefox-crashes-2016-11-09.json.gz', '../crashsimilarity_data/firefox-crashes-2016-11-08.json.gz', '../crashsimilarity_data/firefox-crashes-2016-11-07.json.gz', '../crashsimilarity_data/firefox-crashes-2016-11-06.json.gz', '../crashsimilarity_data/firefox-crashes-2016-11-05.json.gz', '../crashsimilarity_data/firefox-crashes-2016-11-04.json.gz', '../crashsimilarity_data/firefox-crashes-2016-11-03.json.gz']
+    paths = ['../crashsimilarity_data/firefox-crashes-2016-11-09.json.gz',
+             '../crashsimilarity_data/firefox-crashes-2016-11-08.json.gz',
+             '../crashsimilarity_data/firefox-crashes-2016-11-07.json.gz',
+             '../crashsimilarity_data/firefox-crashes-2016-11-06.json.gz',
+             '../crashsimilarity_data/firefox-crashes-2016-11-05.json.gz',
+             '../crashsimilarity_data/firefox-crashes-2016-11-04.json.gz',
+             '../crashsimilarity_data/firefox-crashes-2016-11-03.json.gz']
     corpus = read_corpus(paths)
     model = train_model(corpus)
 
-    print(dict([(model.wv.index2word[i], similarity) for i, similarity in enumerate(model.wv.similar_by_word('igdumd32.dll@0x', topn=False))])['igdumd64.dll@0x'])
+    print(dict([(model.wv.index2word[i], similarity) for i, similarity in
+                enumerate(model.wv.similar_by_word('igdumd32.dll@0x', topn=False))])['igdumd64.dll@0x'])
