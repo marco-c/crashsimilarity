@@ -12,8 +12,8 @@ import numpy as np
 import pyximport
 from pyemd import emd
 
-from crashsimilarity import download_data, utils
-from crashsimilarity.download_data import download_stack_traces_for_signature
+from crashsimilarity import utils
+from crashsimilarity.downloader import Downloader
 
 pyximport.install()
 
@@ -56,7 +56,7 @@ def read_corpus(fnames):
 
 
 def get_stack_traces_for_signature(fnames, signature, traces_num=100):
-    traces = download_stack_traces_for_signature(signature, traces_num)
+    traces = Downloader().download_stack_traces_for_signature(signature, traces_num)
 
     for line in utils.read_files(fnames):
         data = json.loads(line)
@@ -67,7 +67,7 @@ def get_stack_traces_for_signature(fnames, signature, traces_num=100):
 
 
 def get_stack_trace_for_uuid(uuid):
-    data = download_data.download_crash(uuid)
+    data = Downloader().download_crash_for_id(uuid)
     return data['proto_signature']
 
 
