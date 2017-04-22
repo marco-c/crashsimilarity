@@ -1,4 +1,5 @@
 import pickle
+from abc import abstractmethod
 
 
 class BaseCache(object):
@@ -6,8 +7,9 @@ class BaseCache(object):
         self.name = name
         self.file_name = file_name if file_name else '{}_cache.pickle'.format(self.name)
 
-    def build(self, data=None):
-        return self
+    @abstractmethod
+    def build(self, data):
+        pass
 
     def dump(self, file_name=None):
         if not file_name:
@@ -38,3 +40,6 @@ class DownloaderCache(dict, BaseCache):
             self.dump()
         except:
             pass
+
+    def build(self, data):
+        return DownloaderCache(**data)
