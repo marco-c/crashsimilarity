@@ -1,5 +1,4 @@
-import download_data
-import crash_similarity
+from crashsimilarity import utils, crash_similarity
 import argparse
 import sys
 
@@ -16,8 +15,8 @@ def parse_args(args):
 if __name__ == '__main__':
     args = parse_args(sys.argv[1:])
 
-    download_data.download_crashes(days=3, product=args.product)
-    paths = download_data.get_paths(days=3, product=args.product)
+    utils.download_crashes(days=3, product=args.product)
+    paths = utils.get_paths(days=3, product=args.product)
     # paths = ['crashsimilarity_data/firefox-crashes-2016-11-09.json', 'crashsimilarity_data/firefox-crashes-2016-11-08.json', 'crashsimilarity_data/firefox-crashes-2016-11-07.json', 'crashsimilarity_data/firefox-crashes-2016-11-06.json', 'crashsimilarity_data/firefox-crashes-2016-11-05.json', 'crashsimilarity_data/firefox-crashes-2016-11-04.json', 'crashsimilarity_data/firefox-crashes-2016-11-03.json']
 
     corpus = crash_similarity.read_corpus(paths)

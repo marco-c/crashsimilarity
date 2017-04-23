@@ -1,6 +1,5 @@
 # CLI INTERFACE THAT EVALUATES THE SIMILARITY BETWEEN STACK TRACES IN A GIVEN SIGNATURE.
-import download_data
-import crash_similarity
+from crashsimilarity import utils, crash_similarity
 import sys
 import argparse
 
@@ -17,8 +16,8 @@ if __name__ == '__main__':
     args = parse_args(sys.argv[1:])
 
     # Downloads some data (e.g. the past 7 days)
-    download_data.download_crashes(days=7, product=args.product)
-    paths = download_data.get_paths(days=7, product=args.product)
+    utils.download_crashes(days=7, product=args.product)
+    paths = utils.get_paths(days=7, product=args.product)
 
     # Reads the corpus
     corpus = crash_similarity.read_corpus(paths)
