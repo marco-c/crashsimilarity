@@ -96,3 +96,28 @@ class SocorroDownloader(Downloader):
         if self._cache:
             self._cache[key] = crash
         return crash
+
+    def download_day_crashes(self, day, product='Firefox', offset=0, crashes_per_request=1000):
+        """While there can be ~100mb of data this function return generator"""
+        params = {
+            'product': product,
+            'date': ['>=' + str(day), '<' + str(day + timedelta(1))],
+            '_columns': ['uuid', 'signature', 'proto_signature'],
+            '_results_number': crashes_per_request,
+            '_results_offset': offset,
+            '_facets_size': 0,
+        }
+        logging.info('start downloading crashes for {}'.format(day))
+        uuids = set()
+        while True:
+            params['_results_offset'] = offset
+            response = self._json_or_raise(self.get_with_retries(self._SUPER_SEARCH_URL, params))
+            logging.info('offset: {} from: {}'.format(offset, response['total']))
+            crashes = response['hits']
+            offset += len(crashes)
+            for crash in crashes:
+                if crash['uuid'] not in uuids:
+                    uuids.add(crash['uuid'])
+                    yield crash
+            if len(crashes) < crashes_per_request:
+                break

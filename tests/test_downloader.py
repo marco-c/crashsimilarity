@@ -3,6 +3,7 @@ from datetime import timedelta
 
 import requests
 import requests_mock
+from itertools import islice
 
 from crashsimilarity import utils
 from crashsimilarity.downloader import BugzillaDownloader, SocorroDownloader, Downloader
@@ -71,6 +72,39 @@ class DownloaderTest(unittest.TestCase):
         updated_cache[('crash_for_uuid', '42', utils.utc_today())] = expected_signature
         updated_cache[('bugzilla_bug', '239', utils.utc_today())] = 'bug with id 239'
         self.assertDictEqual(cache, updated_cache)
+
+    def test_download_day_crashes(self):
+        socorro = SocorroDownloader()
+        expected = [{'proto_signature': 'fun1 | fun2 | fun3', 'signature': 'sig1', 'uuid': 'uuid-1'},
+                    {'proto_signature': 'fun6 | fun7 | fun8', 'signature': 'sig2', 'uuid': 'uuid-2'},
+                    {'proto_signature': 'fun10 | fun11 | fun12', 'signature': 'sig3', 'uuid': 'uuid-3'},
+                    {'proto_signature': 'gcd_ | dfs | LCA', 'signature': 'sig4', 'uuid': 'uuid-4'},
+                    {'proto_signature': '<T>cpp | js::foo | js::bar_x', 'signature': 'sig5', 'uuid': 'uuid-5'}
+                    ]
+        first_part = {'errors': 'whatever', 'facets': {}, 'hits': expected[:2], 'total': 5}
+        second_part = {'errors': 'whatever', 'facets': {}, 'hits': expected[2:4], 'total': 5}
+        third_part = {'errors': 'whatever', 'facets': {}, 'hits': expected[4:], 'total': 5}
+        with requests_mock.Mocker() as m:
+            m.get(socorro._SUPER_SEARCH_URL, [{'json': first_part}, {'json': second_part}, {'json': third_part}])
+            res2 = socorro.download_day_crashes(utils.utc_today(), crashes_per_request=2)
+            self.assertCountEqual(list(res2), expected)
+
+        with requests_mock.Mocker() as m:
+            m.get(socorro._SUPER_SEARCH_URL, json={'hits': expected, 'total': 5})
+            res10 = socorro.download_day_crashes(utils.utc_today(), crashes_per_request=10)
+            self.assertCountEqual(list(res10), expected)
+
+        # can get data before exception
+        with self.assertRaises(Exception) as ctx:
+            with requests_mock.Mocker() as m:
+                m.get(socorro._SUPER_SEARCH_URL, [{'json': first_part}, {'status_code': 404}])
+                res = socorro.download_day_crashes(utils.utc_today(), crashes_per_request=2)
+                first2 = list(islice(res, 2))
+                other = list(res)
+                self.assertCountEqual(first2, expected[:2])
+                self.assertIs(other, [])
+                self.assertIsInstance(ctx.exception, requests.exceptions.HTTPError)
+                self.assertIn(404, ctx.exception)
 
     def test_downloader_404(self):
         downloader = SocorroDownloader()
