@@ -4,26 +4,8 @@ import unittest
 from crashsimilarity.cache import TracesCache, DownloaderCache
 
 
-class TestTracesCache(unittest.TestCase):
-    def test_traces_cache_build(self):
-        lines = ['{"proto_signature": "a | CAPITAL_LETTERS | c", "uuid": "1", "signature": "c"}',
-                 '{"proto_signature": "a | b | d", "uuid": "2", "signature": "d"}',
-                 '{"proto_signature": "a | x | d", "uuid": "3", "signature": "d"}',
-                 '{"proto_signature": "a | b | e", "uuid": "4", "signature": "same"}',
-                 '{"proto_signature": "with | @0x end | drop", "uuid": "5", "signature": "drop"}',
-                 '{"proto_signature": "with | xul.dll@", "uuid": "6", "signature": "ignored"}',
-                 '{"proto_signature": "a | b | e", "uuid": "7", "signature": "same"}']
-        cache = TracesCache.build(lines)
-        expected = [(['a', 'capital_letters', 'c'], 'c', '1'),
-                    (['a', 'b', 'd'], 'd', '2'),
-                    (['a', 'x', 'd'], 'd', '3'),
-                    (['a', 'b', 'e'], 'same', '4'),
-                    (['with', '@0x', 'drop'], 'drop', '5')]
-        self.assertEqual(cache.traces, expected)
-
-
-class TestDownloaderCache(unittest.TestCase):
-    default_cache_file_name = 'downloader_cache.pickle'
+class CacheTest(unittest.TestCase):
+    default_cache_file_name = 'default.pickle'
     other_file_name = 'other.pickle'
 
     # don't want to use pyfake or mock os.system calls for such a small task
@@ -33,12 +15,68 @@ class TestDownloaderCache(unittest.TestCase):
         if os.path.exists(self.other_file_name):
             os.remove(self.other_file_name)
 
+    def tearDown(self):
+        self.setUp()
+
+
+class TestTracesCache(CacheTest):
+    lines = ['{"proto_signature": "a | CAPITAL_LETTERS | c", "uuid": "1", "signature": "c"}',
+             '{"proto_signature": "a | b | d", "uuid": "2", "signature": "d"}',
+             '{"proto_signature": "a | x | d", "uuid": "3", "signature": "d"}',
+             '{"proto_signature": "a | b | e", "uuid": "4", "signature": "same"}',
+             '{"proto_signature": "with | @0x end | drop", "uuid": "5", "signature": "drop"}',
+             '{"proto_signature": "with | xul.dll@", "uuid": "6", "signature": "ignored"}',
+             '{"proto_signature": "a | b | e", "uuid": "7", "signature": "same"}']
+    default_cache_file_name = 'traces_cache.pickle'
+
+    def test_traces_cache_build(self):
+        cache = TracesCache.build(self.lines)
+        expected = [(['a', 'capital_letters', 'c'], 'c', '1'),
+                    (['a', 'b', 'd'], 'd', '2'),
+                    (['a', 'x', 'd'], 'd', '3'),
+                    (['a', 'b', 'e'], 'same', '4'),
+                    (['with', '@0x', 'drop'], 'drop', '5')]
+        self.assertEqual(cache.traces, expected)
+        self.assertEqual(cache.name, 'traces')
+        self.assertEqual(cache.file_name, 'traces_cache.pickle')
+
+    def test_save_load(self):
+        cache = TracesCache.build(self.lines)
+        cache.dump(self.default_cache_file_name)
+        from_disk = TracesCache.load(self.default_cache_file_name)
+        self.assertEqual(from_disk.traces, cache.traces)
+        from_disk = TracesCache.load(self.other_file_name)
+        self.assertIsNone(from_disk)
+
+
+class TestDownloaderCache(CacheTest):
+    default_cache_file_name = 'downloader_cache.pickle'
+
     def test_build(self):
         cache = DownloaderCache.build()
-        self.assertDictEqual(dict(), cache)
+        self.assertDictEqual(cache, dict())
+        self.assertEqual(cache.name, 'downloader')
+        self.assertEqual(cache.file_name, self.default_cache_file_name)
         cache = DownloaderCache()
-        self.assertDictEqual(dict(), cache)
+        self.assertDictEqual(cache, dict())
         cache = DownloaderCache({'foo': 1, 42: 'bar'})
-        self.assertDictEqual({'foo': 1, 42: 'bar'}, cache)
-        cache = DownloaderCache.build({'foo': 1, 42: 'bar'})
-        self.assertDictEqual({'foo': 1, 42: 'bar'}, cache)
+        self.assertDictEqual(cache, {'foo': 1, 42: 'bar'})
+        cache = DownloaderCache.build({'foo': 1, 42: 'bar'}, file_name=self.other_file_name)
+        self.assertDictEqual(cache, {'foo': 1, 42: 'bar'})
+        self.assertEqual(cache.file_name, self.other_file_name)
+
+    def test_save_on_update(self):
+        cache = DownloaderCache()
+        cache['foo'] = 1
+        from_disk = DownloaderCache.load(cache.file_name)
+        self.assertEqual(from_disk, cache)
+        cache['bar'] = 2
+        self.assertNotEqual(from_disk, cache)
+        from_disk = DownloaderCache.load(cache.file_name)
+        self.assertEqual(from_disk, cache)
+
+    def test_try_load_or_build(self):
+        cache = DownloaderCache().try_load_or_build(self.default_cache_file_name, {'foo': 1, 42: 'bar'})
+        self.assertDictEqual(cache, {'foo': 1, 42: 'bar'})
+        from_disk = DownloaderCache.load(cache.file_name)
+        self.assertEqual(from_disk, cache)

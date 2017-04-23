@@ -22,16 +22,17 @@ class BaseCache(object):
             file_name = self.file_name
         pickle.dump(self, open(file_name, 'wb'))
 
-    def _load(self, file_name=None):
+    @staticmethod
+    def load(file_name):
         try:
-            if not file_name:
-                file_name = self.file_name
             return pickle.load(open(file_name, 'rb'))
         except:
             return None
 
-    def try_load_or_build(self, data=None, file_name=None):
-        rv = self._load(file_name)
+    def try_load_or_build(self, file_name=None, data=None):
+        if not file_name:
+            file_name = self.file_name
+        rv = self.load(file_name)
         return rv if rv else self.build(data)
 
 
@@ -52,6 +53,7 @@ class DownloaderCache(dict, BaseCache):
         d = DownloaderCache(data) if data else DownloaderCache()
         if file_name:
             d.file_name = file_name
+        d.dump()
         return d
 
 
