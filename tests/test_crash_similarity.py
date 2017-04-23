@@ -10,11 +10,10 @@ funcs = [('js::jit::MakeMRegExpHoistable ', 'js::jit::makemregexphoistable '), (
 
 stack_trace = "js::GCMarker::processMarkStackTop | js::GCMarker::drainMarkStack | js::gc::GCRuntime::incrementalCollectSlice | js::gc::GCRuntime::gcCycle | js::gc::GCRuntime::collect | JS::StartIncrementalGC | nsJSContext::GarbageCollectNow | nsTimerImpl::Fire | nsTimerEvent::Run | nsThread::ProcessNextEvent | NS_ProcessPendingEvents | nsBaseAppShell::NativeEventCallback | nsAppShell::ProcessGeckoEvents | CoreFoundation@0xa74b0 | CoreFoundation@0x8861c | CoreFoundation@0x87b15 | CoreFoundation@0x87513 | HIToolbox@0x312ab | HIToolbox@0x310e0 | HIToolbox@0x30f15 | AppKit@0x476cc | AppKit@0x7be82f | CoreFoundation@0x9e3a1 | AppKit@0xc56609 | AppKit@0xc9e7f7 | AppKit@0xc9e387 | AppKit@0xc567a9 | AppKit@0xc5867b | AppKit@0xc57ccc | AppKit@0xc5a9c2 | AppKit@0x47c2ed | AppKit@0x47c304 | AppKit@0xcdcf03 | AppKit@0xc56e2b | AppKit@0xc579af | AppKit@0xcdcee2 | AppKit@0xc5e77b | AppKit@0xc9897a | AppKit@0xc9c88c | AppKit@0xc7f10e"
 
-clean_stack_trace = ['js::gcmarker::processmarkstacktop', 'js::gcmarker::drainmarkstack', 'js::gc::gcruntime::incrementalcollectslice', 'js::gc::gcruntime::gccycle', 'js::gc::gcruntime::collect', 'js::startincrementalgc', 'nsjscontext::garbagecollectnow', 'nstimerimpl::fire', 'nstimerevent::run', 'nsthread::processnextevent']
+first10_clean_stack_traces = ['js::gcmarker::processmarkstacktop', 'js::gcmarker::drainmarkstack', 'js::gc::gcruntime::incrementalcollectslice', 'js::gc::gcruntime::gccycle', 'js::gc::gcruntime::collect', 'js::startincrementalgc', 'nsjscontext::garbagecollectnow', 'nstimerimpl::fire', 'nstimerevent::run', 'nsthread::processnextevent']
 
 
 class CrashSimilarityTest(unittest.TestCase):
-
     # Train Model to be used in all tests
     @classmethod
     def setUpClass(self):
@@ -62,12 +61,11 @@ class CrashSimilarityTest(unittest.TestCase):
 
     def test_clean_func(self):
         for f, expected in funcs:
-            self.assertEqual(crash_similarity.clean_func(f), expected)
+            self.assertEqual(utils.preprocess(f), [expected])
 
     def test_preprocess_returns_clean_stack_traces(self):
-        resp = crash_similarity.preprocess(stack_trace)
-        self.assertEqual(len(resp), 10)
-        self.assertEqual(resp, clean_stack_trace)
+        resp = utils.preprocess(stack_trace)
+        self.assertEqual(resp[:10], first10_clean_stack_traces)
 
     def test_should_skip_returns_correct_boolean_value(self):
         for f in funcs:

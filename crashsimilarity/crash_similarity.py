@@ -34,7 +34,7 @@ def read_corpus(fnames):
         if should_skip(proto_signature):
             continue
 
-        processed = preprocess(proto_signature)
+        processed = preprocess(proto_signature, 10)
 
         if frozenset(processed) not in already_selected:
             elems.append((processed, data['signature']))
