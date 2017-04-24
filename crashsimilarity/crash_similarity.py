@@ -12,8 +12,8 @@ import numpy as np
 import pyximport
 from pyemd import emd
 
-from crashsimilarity import download_data, utils
-from crashsimilarity.download_data import download_stack_traces_for_signature
+from crashsimilarity import utils
+from crashsimilarity.downloader import SocorroDownloader
 
 pyximport.install()
 
@@ -56,7 +56,7 @@ def read_corpus(fnames):
 
 
 def get_stack_traces_for_signature(fnames, signature, traces_num=100):
-    traces = download_stack_traces_for_signature(signature, traces_num)
+    traces = SocorroDownloader().download_stack_traces_for_signature(signature, traces_num)
 
     for line in utils.read_files(fnames):
         data = json.loads(line)
@@ -67,7 +67,7 @@ def get_stack_traces_for_signature(fnames, signature, traces_num=100):
 
 
 def get_stack_trace_for_uuid(uuid):
-    data = download_data.download_crash(uuid)
+    data = SocorroDownloader().download_crash(uuid)
     return data['proto_signature']
 
 
@@ -243,7 +243,13 @@ def signature_similarity(model, paths, signature1, signature2):
 if __name__ == '__main__':
     # download_data.download_crashes(days=7, product='Firefox')
     # paths = download_data.get_paths(days=7, product='Firefox')
-    paths = ['../crashsimilarity_data/firefox-crashes-2016-11-09.json.gz', '../crashsimilarity_data/firefox-crashes-2016-11-08.json.gz', '../crashsimilarity_data/firefox-crashes-2016-11-07.json.gz', '../crashsimilarity_data/firefox-crashes-2016-11-06.json.gz', '../crashsimilarity_data/firefox-crashes-2016-11-05.json.gz', '../crashsimilarity_data/firefox-crashes-2016-11-04.json.gz', '../crashsimilarity_data/firefox-crashes-2016-11-03.json.gz']
+    paths = ['../crashsimilarity_data/firefox-crashes-2016-11-09.json.gz',
+             '../crashsimilarity_data/firefox-crashes-2016-11-08.json.gz',
+             '../crashsimilarity_data/firefox-crashes-2016-11-07.json.gz',
+             '../crashsimilarity_data/firefox-crashes-2016-11-06.json.gz',
+             '../crashsimilarity_data/firefox-crashes-2016-11-05.json.gz',
+             '../crashsimilarity_data/firefox-crashes-2016-11-04.json.gz',
+             '../crashsimilarity_data/firefox-crashes-2016-11-03.json.gz']
     corpus = read_corpus(paths)
     model = train_model(corpus)
 
