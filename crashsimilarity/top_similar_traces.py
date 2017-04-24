@@ -1,9 +1,8 @@
 # CLI INTERFACE THAT TAKES STACK TRACE AS INPUT AND RETURNS SIMILAR STACK TRACES
-from crashsimilarity import utils, crash_similarity
+from crashsimilarity.downloader import SocorroDownloader
+from crashsimilarity import crash_similarity
 import argparse
 import sys
-
-from crashsimilarity.downloader import SocorroDownloader
 
 
 def parse_args(args):
@@ -17,8 +16,8 @@ def parse_args(args):
 if __name__ == '__main__':
     args = parse_args(sys.argv[1:])
     # downloads some data (e.g. the past 7 days)
-    utils.download_crashes(days=7, product=args.product)
-    paths = utils.get_paths(days=7, product=args.product)
+    SocorroDownloader.download_and_save_crashes(days=7, product=args.product)
+    paths = SocorroDownloader.get_dump_paths(days=7, product=args.product)
 
     # reads the corpus
     corpus = crash_similarity.read_corpus(paths)

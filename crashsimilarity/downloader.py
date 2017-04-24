@@ -1,3 +1,4 @@
+import os
 from datetime import timedelta
 import logging
 
@@ -121,3 +122,25 @@ class SocorroDownloader(Downloader):
                     yield crash
             if len(crashes) < crashes_per_request:
                 break
+
+    @staticmethod
+    def download_and_save_crashes(days, product='Firefox', save_to_dir=utils.CRASHSIMILARITY_DATA_DIR):
+        if not os.path.exists(save_to_dir):
+            utils.create_dir(save_to_dir)
+
+        utils.write_json('{}/schema_version'.format(save_to_dir), [1])
+
+        for i in range(0, days):
+            day = utils.utc_today() - timedelta(i)
+            gen = SocorroDownloader().download_day_crashes(day, product)
+            utils.write_json(utils.crashes_dump_file_path(day, product, save_to_dir), gen)
+
+    @staticmethod
+    def get_dump_paths(days, product='Firefox', data_dir=utils.CRASHSIMILARITY_DATA_DIR):
+        last_day = utils.utc_today()
+        path = utils.crashes_dump_file_path(last_day, product, data_dir)
+        if not os.path.exists(path):
+            last_day -= timedelta(1)
+        return [f for f in
+                [utils.crashes_dump_file_path(last_day - timedelta(i), product, data_dir) for i in range(0, days)]
+                if os.path.exists(f)]
