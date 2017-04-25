@@ -4,15 +4,14 @@
 [![codecov](https://codecov.io/gh/marco-c/crashsimilarity/branch/master/graph/badge.svg)](https://codecov.io/gh/marco-c/crashsimilarity)
 
 ### Description
-Crashsimilarity is a tool to cluster slightly different crash reports, reporting the same problem. It is built for mozilla and support crash reports produced by [breakpad](https://chromium.googlesource.com/breakpad/breakpad/).
+Crashsimilarity is a tool to cluster slightly different crash reports, reporting the same problem. It supports crashes reported to the Mozilla [Socorro crash reporting system](https://crash-stats.mozilla.com/)
 
- :exclamation: The project is in early prototype stage.  :exclamation:
+It uses doc2vec for word embedding and [WMD](http://proceedings.mlr.press/v37/kusnerb15.pdf) as a distance metric.
 
-### How does it work
-It use doc2vec for word embedding. Similarity based on [WMD Distance](http://proceedings.mlr.press/v37/kusnerb15.pdf) is calculated.
+:exclamation: The project is in early prototype stage.  :exclamation:
 
 ### How to run
-For now only command line interface is supported. Have a look at [cli](https://github.com/marco-c/crashsimilarity/tree/master/crashsimilarity/cli) directory.
+For now only command line interface is supported. Have a look at the [cli](https://github.com/marco-c/crashsimilarity/tree/master/crashsimilarity/cli) directory.
 
 ### Tests
 ```sh
