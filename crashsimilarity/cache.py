@@ -1,10 +1,7 @@
-import json
 import pickle
 from abc import abstractmethod
 
-import logging
-
-from crashsimilarity import utils
+from crashsimilarity.utils import StackTraceProcessor
 
 
 class BaseCache(object):
@@ -63,27 +60,9 @@ class TracesCache(BaseCache):
         self.traces = traces if traces else []
 
     @staticmethod
-    def build(stream, file_name=None):
-        """build from downloaded archives"""
+    def build(traces, file_name=None):
+        return TracesCache(traces, file_name)
 
-        # Exclude stack traces without symbols.
-        def should_skip(stack_trace):
-            return any(call in stack_trace for call in ['xul.dll@', 'XUL@', 'libxul.so@'])
-
-        logging.info('building cache from stream...')
-
-        traces = []
-        already_selected = set()
-        for line in stream:
-            data = json.loads(line)
-            if should_skip(data['proto_signature']):
-                continue
-            processed = utils.preprocess(data['proto_signature'])
-            if frozenset(processed) not in already_selected:
-                # TODO: named tuple?
-                traces.append((processed, data['signature'].lower(), data['uuid']))
-                already_selected.add(frozenset(processed))
-        cache = TracesCache(traces)
-        if file_name:
-            cache.file_name = file_name
-        return cache
+    @staticmethod
+    def build_from_raw_traces(traces, file_name=None):
+        return TracesCache.build(list(StackTraceProcessor.process(traces)), file_name)

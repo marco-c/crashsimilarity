@@ -2,6 +2,7 @@ import os
 import unittest
 
 from crashsimilarity.cache import TracesCache, DownloaderCache
+from tests.test_utils import StackTraceProcessorTest
 
 
 class CacheTest(unittest.TestCase):
@@ -20,28 +21,17 @@ class CacheTest(unittest.TestCase):
 
 
 class TestTracesCache(CacheTest):
-    lines = ['{"proto_signature": "a | CAPITAL_LETTERS | c", "uuid": "1", "signature": "c"}',
-             '{"proto_signature": "a | b | d", "uuid": "2", "signature": "d"}',
-             '{"proto_signature": "a | x | d", "uuid": "3", "signature": "d"}',
-             '{"proto_signature": "a | b | e", "uuid": "4", "signature": "same"}',
-             '{"proto_signature": "with | @0x end | drop", "uuid": "5", "signature": "drop"}',
-             '{"proto_signature": "with | xul.dll@", "uuid": "6", "signature": "ignored"}',
-             '{"proto_signature": "a | b | e", "uuid": "7", "signature": "same"}']
     default_cache_file_name = 'traces_cache.pickle'
 
-    def test_traces_cache_build(self):
-        cache = TracesCache.build(self.lines)
-        expected = [(['a', 'capital_letters', 'c'], 'c', '1'),
-                    (['a', 'b', 'd'], 'd', '2'),
-                    (['a', 'x', 'd'], 'd', '3'),
-                    (['a', 'b', 'e'], 'same', '4'),
-                    (['with', '@0x', 'drop'], 'drop', '5')]
-        self.assertEqual(cache.traces, expected)
+    def test_traces_cache_build_from_raw_traces(self):
+        """we need to be sure that `build_from_raw_traces` is just a proxy call for StackTraceProcessor.process(...)"""
+        cache = TracesCache.build_from_raw_traces(StackTraceProcessorTest.raw_traces)
+        self.assertEqual(cache.traces, StackTraceProcessorTest.expected_traces)
         self.assertEqual(cache.name, 'traces')
         self.assertEqual(cache.file_name, 'traces_cache.pickle')
 
     def test_save_load(self):
-        cache = TracesCache.build(self.lines)
+        cache = TracesCache.build([(['a', 'b', 'd'], 'd', '2')])
         cache.dump(self.default_cache_file_name)
         from_disk = TracesCache.load(self.default_cache_file_name)
         self.assertEqual(from_disk.traces, cache.traces)

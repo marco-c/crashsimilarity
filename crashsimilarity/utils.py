@@ -1,3 +1,4 @@
+import json
 import os
 import errno
 from datetime import datetime
@@ -28,15 +29,35 @@ def read_files(file_names, open_file_function=smart_open):
                 yield line if isinstance(line, str) else line.decode('utf8')
 
 
-def preprocess(stack_trace, take=None):
-    def clean(func):
-        func = func.lower().replace('\n', '')
-        return func[:func.index('@0x') + 3] if '@0x' in func else func
+class StackTraceProcessor(object):  # just a namespace, actually
+    @staticmethod
+    def _should_skip(stack_trace):
+        """Exclude stack traces without symbols"""
+        return any(call in stack_trace for call in ['xul.dll@', 'XUL@', 'libxul.so@'])
 
-    traces = [clean(f) for f in stack_trace.split(' | ')]
-    if take:
-        traces = traces[:take]
-    return traces
+    @staticmethod
+    def _preprocess(stack_trace, take=None):
+        def clean(func):
+            func = func.lower().replace('\n', '')
+            return func[:func.index('@0x') + 3] if '@0x' in func else func
+
+        traces = [clean(f).strip() for f in stack_trace.split(' | ')]
+        if take:
+            traces = traces[:take]
+        return traces
+
+    @staticmethod
+    def process(stream):
+        already_selected = set()
+        for line in stream:
+            data = json.loads(line)
+            if StackTraceProcessor._should_skip(data['proto_signature']):
+                continue
+            processed = StackTraceProcessor._preprocess(data['proto_signature'])
+            if frozenset(processed) not in already_selected:
+                # TODO: named tuple?
+                already_selected.add(frozenset(processed))
+                yield (processed, data['signature'].lower(), data['uuid'])
 
 
 def create_dir(path):
