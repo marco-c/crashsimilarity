@@ -20,21 +20,7 @@ pyximport.install()
 
 
 def read_corpus(fnames):
-    elems = []
-    already_selected = set()
-    for line in utils.read_files(fnames):
-        data = json.loads(line)
-        proto_signature = data['proto_signature']
-
-        if StackTraceProcessor.should_skip(proto_signature):
-            continue
-
-        processed = StackTraceProcessor.preprocess(proto_signature, 10)
-
-        if frozenset(processed) not in already_selected:
-            elems.append((processed, data['signature']))
-        already_selected.add(frozenset(processed))
-
+    elems = StackTraceProcessor.process(utils.read_files(fnames), 10)
     return [gensim.models.doc2vec.TaggedDocument(trace, [i, signature]) for i, (trace, signature) in enumerate(elems)]
 
 

@@ -35,13 +35,13 @@ class StackTraceProcessor(object):  # just a namespace, actually
         return traces
 
     @staticmethod
-    def process(stream):
+    def process(stream, take_top_funcs=None):
         already_selected = set()
         for line in stream:
             data = json.loads(line)
             if StackTraceProcessor.should_skip(data['proto_signature']):
                 continue
-            processed = StackTraceProcessor.preprocess(data['proto_signature'])
+            processed = StackTraceProcessor.preprocess(data['proto_signature'], take_top_funcs)
             if frozenset(processed) not in already_selected:
                 # TODO: named tuple?
                 already_selected.add(frozenset(processed))
