@@ -1,24 +1,13 @@
-import os
 import errno
+import json
+import os
 from datetime import datetime
 
 from smart_open import smart_open
-import requests
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
 
 
 def utc_today():
     return datetime.utcnow().date()
-
-
-def get_with_retries(url, params=None, headers=None):
-    retries = Retry(total=16, backoff_factor=1, status_forcelist=[429])
-
-    s = requests.Session()
-    s.mount('https://crash-stats.mozilla.com', HTTPAdapter(max_retries=retries))
-
-    return s.get(url, params=params, headers=headers)
 
 
 def read_files(file_names, open_file_function=smart_open):
@@ -34,3 +23,16 @@ def create_dir(path):
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise e
+
+
+CRASHSIMILARITY_DATA_DIR = '../crashsimilarity_data'
+
+
+def crashes_dump_file_path(day, product, data_dir):
+    return '{}/{}-crashes-{}.json'.format(data_dir, product.lower(), day)
+
+
+def write_json(path, data):
+    with open(path, 'w') as f:
+        for elem in data:
+            f.write(json.dumps(elem) + '\n')
