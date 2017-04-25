@@ -14,44 +14,13 @@ from pyemd import emd
 
 from crashsimilarity import utils
 from crashsimilarity.downloader import SocorroDownloader
+from crashsimilarity.utils import StackTraceProcessor
 
 pyximport.install()
 
 
-def clean_func(func):
-    func = func.lower().replace('\n', '')
-
-    if '@0x' in func:
-        return func[:func.index('@0x') + 3]
-
-    return func
-
-
-def preprocess(stack_trace):
-    return [clean_func(f) for f in stack_trace.split(' | ')][:10]  # XXX: 10 bottom frames or all of them?
-
-
-# Exclude stack traces without symbols.
-def should_skip(stack_trace):
-    return 'xul.dll@' in stack_trace or 'XUL@' in stack_trace or 'libxul.so@' in stack_trace
-
-
 def read_corpus(fnames):
-    elems = []
-    already_selected = set()
-    for line in utils.read_files(fnames):
-        data = json.loads(line)
-        proto_signature = data['proto_signature']
-
-        if should_skip(proto_signature):
-            continue
-
-        processed = preprocess(proto_signature)
-
-        if frozenset(processed) not in already_selected:
-            elems.append((processed, data['signature']))
-        already_selected.add(frozenset(processed))
-
+    elems = StackTraceProcessor.process(utils.read_files(fnames), 10)
     return [gensim.models.doc2vec.TaggedDocument(trace, [i, signature]) for i, (trace, signature) in enumerate(elems)]
 
 
@@ -161,7 +130,7 @@ def top_similar_traces(model, corpus, stack_trace, top=10):
 
     similarities = []
 
-    words_to_test = preprocess(stack_trace)
+    words_to_test = StackTraceProcessor.preprocess(stack_trace)
     words_to_test_clean = [w for w in np.unique(words_to_test).tolist() if w in model]
 
     # TODO: Test if a first sorting with the average vectors is useful.
@@ -225,11 +194,11 @@ def signature_similarity(model, paths, signature1, signature2):
     already_processed = set()
 
     for doc1 in traces1:
-        words1 = np.unique([word for word in preprocess(doc1) if word in model]).tolist()
+        words1 = np.unique([word for word in StackTraceProcessor.preprocess(doc1) if word in model]).tolist()
         distances = np.array(1.0 - np.dot(model.wv.syn0norm, model.wv.syn0norm[[model.wv.vocab[word].index for word in words1]].transpose()), dtype=np.double)
 
         for doc2 in traces2:
-            words2 = [word for word in preprocess(doc2) if word in model]
+            words2 = [word for word in StackTraceProcessor.preprocess(doc2) if word in model]
 
             if words1 == words2 or frozenset([tuple(words1), tuple(words2)]) in already_processed:
                 continue
