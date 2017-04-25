@@ -6,26 +6,15 @@ from crashsimilarity.utils import StackTraceProcessor
 
 
 class UtilsTest(unittest.TestCase):
-    url = 'https://bugzilla.mozilla.org/rest/bug'
-
     def test_utc_today_returns_today_date(self):
         self.assertEqual(utils.utc_today(), datetime.utcnow().date())
-
-    def test_get_with_retries(self):
-        bug_id = '1308863'
-        resp = utils.get_with_retries(self.url, params={'id': bug_id})
-        self.assertEqual(resp.status_code, 200)
-
-    def test_get_with_retries_raises_400_with_no_params(self):
-        resp = utils.get_with_retries(self.url)
-        self.assertEqual(resp.status_code, 400)
 
     def test_read_files(self):
         paths = ['tests/test.json']
         for line in utils.read_files(paths):
-            assert 'proto_signature' in line
-            assert 'signature' in line
-            assert 'uuid' in line
+            self.assertIn('proto_signature', line)
+            self.assertIn('signature', line)
+            self.assertIn('uuid', line)
 
 
 class StackTraceProcessorTest(unittest.TestCase):
