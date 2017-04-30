@@ -89,20 +89,28 @@ def train_model(corpus, force_train=False):
     return model
 
 
-# create distance_matrix using precalculate cosine distance from rwmd
-def create_distance_matrix(model, dictionary, docset, all_distances):
-    distances = np.zeros((len(dictionary), len(dictionary)), dtype=np.double)
-    for j, w in dictionary.items():
-        if w in docset:
-            distances[:all_distances.shape[1], j] = all_distances[model.wv.vocab[w].index].transpose()
-
-    return distances
-
-
 # Code modified from https://github.com/RaRe-Technologies/gensim/blob/4f0e2ae/gensim/models/keyedvectors.py#L339
 def wmdistance(model, words1, words2, all_distances):
     dictionary = gensim.corpora.Dictionary(documents=[words1, words2])
     vocab_len = len(dictionary)
+
+    # Sets for faster look-up.
+    docset1 = set(words1)
+    docset2 = set(words2)
+
+    distances = np.zeros((vocab_len, vocab_len), dtype=np.double)
+
+    for i, t1 in dictionary.items():
+        for j, t2 in dictionary.items():
+            if t1 not in docset1 or t2 not in docset2:
+                continue
+
+            distances[i, j] = all_distances[model.wv.vocab[t2].index, i]
+
+    if np.sum(distances) == 0.0:
+        # `emd` gets stuck if the distance matrix contains only zeros.
+        logging.info('The distance matrix is all zeros. Aborting (returning inf).')
+        return float('inf')
 
     # create bag of words from document
     def create_bow(doc):
@@ -116,11 +124,6 @@ def wmdistance(model, words1, words2, all_distances):
 
     bow1 = create_bow(words1)
     bow2 = create_bow(words2)
-
-    docset = set(words2)
-    distances = create_distance_matrix(model, dictionary, docset, all_distances)
-
-    assert sum(distances) != 0
 
     return emd(bow1, bow2, distances)
 
