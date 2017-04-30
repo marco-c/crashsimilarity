@@ -12,7 +12,7 @@ class CrashSimilarityTest(unittest.TestCase):
     # Train Model to be used in all tests
     @classmethod
     def setUpClass(self):
-        self.paths = ['./test.json']
+        self.paths = ['tests/test.json']
         self.corpus = crash_similarity.read_corpus(self.paths)
         self.model = crash_similarity.train_model(self.corpus)
 
