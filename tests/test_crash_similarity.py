@@ -1,5 +1,6 @@
 import json
 import multiprocessing
+import numpy as np
 import unittest
 
 import requests_mock
@@ -11,7 +12,7 @@ class CrashSimilarityTest(unittest.TestCase):
     # Train Model to be used in all tests
     @classmethod
     def setUpClass(self):
-        self.paths = ['tests/test.json']
+        self.paths = ['./test.json']
         self.corpus = crash_similarity.read_corpus(self.paths)
         self.model = crash_similarity.train_model(self.corpus)
 
@@ -84,6 +85,39 @@ class CrashSimilarityTest(unittest.TestCase):
         self.assertEqual(8, resp.window)
         self.assertEqual(20, resp.iter)
         self.assertEqual(101, len(resp.wv.vocab))
+
+    def test_wmdistance_non_zero_distance(self):
+        doc1 = "KiFastSystemCallRet | NtWaitForMultipleObjects | WaitForMultipleObjectsEx | RealMsgWaitForMultipleObjectsEx | CCliModalLoop::BlockFn | CoWaitForMultipleHandles | mozilla::ipc::MessageChannel::WaitForSyncNotifyWithA11yReentry | mozilla::ipc::MessageChannel::WaitForSyncNotify | mozilla::ipc::MessageChannel::Send | mozilla::dom::PScreenManagerChild::SendScreenRefresh | mozilla::widget::ScreenProxy::EnsureCacheIsValid | mozilla::widget::ScreenProxy::GetColorDepth | gfxPlatform::PopulateScreenInfo | gfxPlatform::Init | mozilla::dom::ContentProcess::Init | XRE_InitChildProcess | content_process_main | wmain | remainder | remainder | WinSqmStartSession | _SEH_epilog4 | WinSqmStartSession | _RtlUserThreadStart"
+        doc2 = "Assertion::~Assertion | Assertion::Destroy | InMemoryDataSource::DeleteForwardArcsEntry | PL_DHashTableEnumerate | InMemoryDataSource::~InMemoryDataSource | InMemoryDataSource::`vector deleting destructor' | InMemoryDataSource::Internal::Release | InMemoryDataSource::Release | nsCOMPtr_base::~nsCOMPtr_base | RDFXMLDataSourceImpl::`vector deleting destructor' | RDFXMLDataSourceImpl::Release | DoDeferredRelease<T> | XPCJSRuntime::GCCallback | Collect | js::GC | js::GCForReason | nsXPConnect::Collect | nsCycleCollector::GCIfNeeded | nsCycleCollector::Collect | nsCycleCollector::Shutdown | nsCycleCollector_shutdown | mozilla::ShutdownXPCOM | ScopedXPCOMStartup::~ScopedXPCOMStartup | XREMain::XRE_main | XRE_main | wmain | __tmainCRTStartup | BaseThreadInitThunk | __RtlUserThreadStart | _RtlUserThreadStart"
+
+        words_to_test1 = utils.StackTraceProcessor.preprocess(doc1)
+        words_to_test_clean1 = [w for w in np.unique(words_to_test1).tolist() if w in self.model]
+
+        words_to_test2 = utils.StackTraceProcessor.preprocess(doc2)
+        words_to_test_clean2 = [w for w in np.unique(words_to_test2).tolist() if w in self.model]
+
+        print(words_to_test_clean1)
+        print(words_to_test_clean2)
+        all_distances = np.array(1.0 - np.dot(self.model.wv.syn0norm, self.model.wv.syn0norm[[self.model.wv.vocab[word].index for word in words_to_test_clean1]].transpose()), dtype=np.double)
+
+        distance = crash_similarity.wmdistance(self.model, words_to_test_clean1, words_to_test_clean2, all_distances)
+        self.assertNotEqual(float('inf'), distance)
+
+    def test_wmdistance_zero_distance(self):
+        doc1 = "A | A | A"
+        doc2 = "A | A | A"
+
+        words_to_test1 = utils.StackTraceProcessor.preprocess(doc1)
+        words_to_test_clean1 = [w for w in np.unique(words_to_test1).tolist() if w in self.model]
+
+        words_to_test2 = utils.StackTraceProcessor.preprocess(doc2)
+        words_to_test_clean2 = [w for w in np.unique(words_to_test2).tolist() if w in self.model]
+
+        all_distances = np.array(1.0 - np.dot(self.model.wv.syn0norm, self.model.wv.syn0norm[
+            [self.model.wv.vocab[word].index for word in words_to_test_clean1]].transpose()), dtype=np.double)
+
+        distance = crash_similarity.wmdistance(self.model, words_to_test_clean1, words_to_test_clean2, all_distances)
+        self.assertEqual(float('inf'), distance)
 
 
 if __name__ == '__main__':
