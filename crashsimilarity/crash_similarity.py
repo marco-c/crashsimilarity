@@ -10,13 +10,18 @@ from datetime import datetime
 import gensim
 import numpy as np
 import pyximport
-from pyemd import emd
 
 from crashsimilarity import utils
 from crashsimilarity.downloader import SocorroDownloader
 from crashsimilarity.utils import StackTraceProcessor
 
 pyximport.install()
+
+try:
+    from pyemd import emd
+    PYEMD_EXT = True
+except ImportError:
+    PYEMD_EXT = False
 
 
 def read_corpus(fnames):
@@ -89,40 +94,63 @@ def train_model(corpus, force_train=False):
     return model
 
 
-# create distance_matrix using precalculate cosine distance from rwmd
-def create_distance_matrix(model, dictionary, docset, all_distances):
-    distances = np.zeros((len(dictionary), len(dictionary)), dtype=np.double)
-    for j, w in dictionary.items():
-        if w in docset:
-            distances[:all_distances.shape[1], j] = all_distances[model.wv.vocab[w].index].transpose()
-
-    return distances
-
-
 # Code modified from https://github.com/RaRe-Technologies/gensim/blob/4f0e2ae/gensim/models/keyedvectors.py#L339
-def wmdistance(model, words1, words2, all_distances):
-    dictionary = gensim.corpora.Dictionary(documents=[words1, words2])
+def wmdistance(model, document1, document2, all_distances, distance_metric='cosine'):
+    if not PYEMD_EXT:
+        raise ImportError("Please install pyemd Python package to compute WMD.")
+
+    # Remove out-of-vocabulary words.
+    len_pre_oov1 = len(document1)
+    len_pre_oov2 = len(document2)
+    document1 = [token for token in document1 if token in model]
+    document2 = [token for token in document2 if token in model]
+    diff1 = len_pre_oov1 - len(document1)
+    diff2 = len_pre_oov2 - len(document2)
+    if diff1 > 0 or diff2 > 0:
+        logging.info('Removed %d and %d OOV words from document 1 and 2 (respectively).', diff1, diff2)
+
+    if len(document1) == 0 or len(document2) == 0:
+        logging.info('At least one of the documents had no words that were in the vocabulary. Aborting (returning inf).')
+        return float('inf')
+
+    dictionary = gensim.corpora.Dictionary(documents=[document1, document2])
     vocab_len = len(dictionary)
 
-    # create bag of words from document
-    def create_bow(doc):
-        norm_bow = np.zeros(vocab_len, dtype=np.double)
-        bow = dictionary.doc2bow(doc)
+    # Sets for faster look-up.
+    docset1 = set(document1)
+    docset2 = set(document2)
 
-        for idx, count in bow:
-            norm_bow[idx] = count / float(len(doc))
+    distance_matrix = np.zeros((vocab_len, vocab_len), dtype=np.double)
 
-        return norm_bow
+    for i, t1 in dictionary.items():
+        for j, t2 in dictionary.items():
+            if t1 not in docset1 or t2 not in docset2:
+                continue
 
-    bow1 = create_bow(words1)
-    bow2 = create_bow(words2)
+            if distance_metric == 'euclidean':
+                distance_matrix[i, j] = np.sqrt(np.sum((model[t1] - model[t2]) ** 2))
+            elif distance_metric == 'cosine':
+                distance_matrix[i, j] = all_distances[model.wv.vocab[t2].index, i]
 
-    docset = set(words2)
-    distances = create_distance_matrix(model, dictionary, docset, all_distances)
+    if np.sum(distance_matrix) == 0.0:
+        # `emd` gets stuck if the distance matrix contains only zeros.
+        logging.info('The distance matrix is all zeros. Aborting (returning inf).')
+        return float('inf')
 
-    assert sum(distances) != 0
+    def nbow(document):
+        d = np.zeros(vocab_len, dtype=np.double)
+        nbow = dictionary.doc2bow(document)  # Word frequencies.
+        doc_len = len(document)
+        for idx, freq in nbow:
+            d[idx] = freq / float(doc_len)  # Normalized word frequencies.
+        return d
 
-    return emd(bow1, bow2, distances)
+    # Compute nBOW representation of documents.
+    d1 = nbow(document1)
+    d2 = nbow(document2)
+
+    # Compute WMD.
+    return emd(d1, d2, distance_matrix)
 
 
 def top_similar_traces(model, corpus, stack_trace, top=10):
@@ -168,11 +196,8 @@ def top_similar_traces(model, corpus, stack_trace, top=10):
             logging.debug(top)
             break
 
-        # TODO: replace this with inline code (to avoid recalculating the distances).
-        # wmd = model.wmdistance(words_to_test, corpus[doc_id].words)                      # uses euclidian distance
-
         doc_words_clean = [w for w in corpus[doc_id].words if w in model]
-        wmd = wmdistance(model, words_to_test_clean, doc_words_clean, all_distances)  # uses cosine distance
+        wmd = wmdistance(model, words_to_test_clean, doc_words_clean, all_distances)
 
         j = bisect.bisect(confirmed_distances, wmd)
         confirmed_distances.insert(j, wmd)
