@@ -58,6 +58,7 @@ class BugzillaDownloader(Downloader):
 class SocorroDownloader(Downloader):
     _SUPER_SEARCH_URL = 'https://crash-stats.mozilla.com/api/SuperSearch'
     _PROCESSED_CRASH_URL = 'https://crash-stats.mozilla.com/api/ProcessedCrash'
+    _CRASHSIMILARITY_DATA_DIR = '../crashsimilarity_data'
 
     def __init__(self, cache=None):
         super().__init__(cache)
@@ -124,7 +125,7 @@ class SocorroDownloader(Downloader):
                 break
 
     @staticmethod
-    def download_and_save_crashes(days, product='Firefox', save_to_dir=utils.CRASHSIMILARITY_DATA_DIR):
+    def download_and_save_crashes(days, product='Firefox', save_to_dir=_CRASHSIMILARITY_DATA_DIR):
         if not os.path.exists(save_to_dir):
             utils.create_dir(save_to_dir)
 
@@ -136,7 +137,7 @@ class SocorroDownloader(Downloader):
             utils.write_json(utils.crashes_dump_file_path(day, product, save_to_dir), gen)
 
     @staticmethod
-    def get_dump_paths(days, product='Firefox', data_dir=utils.CRASHSIMILARITY_DATA_DIR):
+    def get_dump_paths(days, product='Firefox', data_dir=_CRASHSIMILARITY_DATA_DIR):
         last_day = utils.utc_today()
         path = utils.crashes_dump_file_path(last_day, product, data_dir)
         if not os.path.exists(path):
