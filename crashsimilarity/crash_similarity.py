@@ -92,8 +92,7 @@ def train_model(corpus, force_train=False):
 # Code modified from https://github.com/RaRe-Technologies/gensim/blob/4f0e2ae/gensim/models/keyedvectors.py#L339
 def wmdistance(model, document1, document2, all_distances):
     if len(document1) == 0 or len(document2) == 0:
-        logging.info(
-            'At least one of the documents had no words that were in the vocabulary. Aborting (returning inf).')
+        logging.info('At least one of the documents had no words that were in the vocabulary. Aborting (returning inf).')
         return float('inf')
 
     dictionary = gensim.corpora.Dictionary(documents=[document1, document2])
