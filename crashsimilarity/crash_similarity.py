@@ -90,42 +90,47 @@ def train_model(corpus, force_train=False):
 
 
 # Code modified from https://github.com/RaRe-Technologies/gensim/blob/4f0e2ae/gensim/models/keyedvectors.py#L339
-def wmdistance(model, words1, words2, all_distances):
-    dictionary = gensim.corpora.Dictionary(documents=[words1, words2])
+def wmdistance(model, document1, document2, all_distances):
+    if len(document1) == 0 or len(document2) == 0:
+        logging.info(
+            'At least one of the documents had no words that were in the vocabulary. Aborting (returning inf).')
+        return float('inf')
+
+    dictionary = gensim.corpora.Dictionary(documents=[document1, document2])
     vocab_len = len(dictionary)
 
     # Sets for faster look-up.
-    docset1 = set(words1)
-    docset2 = set(words2)
+    docset1 = set(document1)
+    docset2 = set(document2)
 
-    distances = np.zeros((vocab_len, vocab_len), dtype=np.double)
+    distance_matrix = np.zeros((vocab_len, vocab_len), dtype=np.double)
 
     for i, t1 in dictionary.items():
         for j, t2 in dictionary.items():
             if t1 not in docset1 or t2 not in docset2:
                 continue
 
-            distances[i, j] = all_distances[model.wv.vocab[t2].index, i]
+            distance_matrix[i, j] = all_distances[model.wv.vocab[t2].index, i]
 
-    if np.sum(distances) == 0.0:
+    if np.sum(distance_matrix) == 0.0:
         # `emd` gets stuck if the distance matrix contains only zeros.
         logging.info('The distance matrix is all zeros. Aborting (returning inf).')
         return float('inf')
 
-    # create bag of words from document
-    def create_bow(doc):
-        norm_bow = np.zeros(vocab_len, dtype=np.double)
-        bow = dictionary.doc2bow(doc)
+    def nbow(document):
+        d = np.zeros(vocab_len, dtype=np.double)
+        nbow = dictionary.doc2bow(document)  # Word frequencies.
+        doc_len = len(document)
+        for idx, freq in nbow:
+            d[idx] = freq / float(doc_len)  # Normalized word frequencies.
+        return d
 
-        for idx, count in bow:
-            norm_bow[idx] = count / float(len(doc))
+    # Compute nBOW representation of documents.
+    d1 = nbow(document1)
+    d2 = nbow(document2)
 
-        return norm_bow
-
-    bow1 = create_bow(words1)
-    bow2 = create_bow(words2)
-
-    return emd(bow1, bow2, distances)
+    # Compute WMD.
+    return emd(d1, d2, distance_matrix)
 
 
 def top_similar_traces(model, corpus, stack_trace, top=10):
