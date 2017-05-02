@@ -90,7 +90,7 @@ def train_model(corpus, force_train=False):
 
 
 # Code modified from https://github.com/RaRe-Technologies/gensim/blob/4f0e2ae/gensim/models/keyedvectors.py#L339
-def wmdistance(model, document1, document2, all_distances):
+def wmdistance(model, document1, document2, all_distances, distance_metric='cosine'):
     if len(document1) == 0 or len(document2) == 0:
         logging.info('At least one of the documents had no words that were in the vocabulary. Aborting (returning inf).')
         return float('inf')
@@ -109,7 +109,10 @@ def wmdistance(model, document1, document2, all_distances):
             if t1 not in docset1 or t2 not in docset2:
                 continue
 
-            distance_matrix[i, j] = all_distances[model.wv.vocab[t2].index, i]
+            if distance_metric == 'euclidean':
+                distance_matrix[i, j] = np.sqrt(np.sum((model[t1] - model[t2]) ** 2))
+            elif distance_metric == 'cosine':
+                distance_matrix[i, j] = all_distances[model.wv.vocab[t2].index, i]
 
     if np.sum(distance_matrix) == 0.0:
         # `emd` gets stuck if the distance matrix contains only zeros.
