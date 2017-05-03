@@ -33,6 +33,9 @@ class EmbeddingAlgo(object):
         self._corpus = self._read_corpus()
         self._model = self._train_model(force_train)
 
+    def get_model(self):
+        return self._model
+
     def _read_traces(self):
         return StackTraceProcessor.process(utils.read_files(self._fnames), 10)
 
