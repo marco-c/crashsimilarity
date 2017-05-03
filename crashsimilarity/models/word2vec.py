@@ -23,11 +23,11 @@ class Word2Vec(EmbeddingAlgo):
 
     def _train_model(self, force_train=False):
         current_date = datetime.now().strftime('%d%b%Y')
-        utils.delete_old_models(current_date, '../trained_models/word2vec/', force_train)
+        utils.delete_old_models(current_date, 'trained_models/word2vec/', force_train)
 
-        if os.path.exists('../trained_models/word2vec/stack_traces_' + current_date + '_model.pickle'):
+        if os.path.exists('trained_models/word2vec/stack_traces_' + current_date + '_model.pickle'):
             return gensim.models.Word2Vec.load(
-                '../trained_models/word2vec/stack_traces_' + current_date + '_model.pickle')
+                'trained_models/word2vec/stack_traces_' + current_date + '_model.pickle')
 
         random.shuffle(self._corpus)
 
@@ -48,7 +48,7 @@ class Word2Vec(EmbeddingAlgo):
         model.train(self._corpus)
         logging.info('Model trained in ' + str(time.time() - t) + ' s.')
 
-        utils.create_dir('../trained_models/word2vec')
-        model.save('../trained_models/word2vec/stack_traces_' + current_date + '_model.pickle')
+        utils.create_dir('trained_models/word2vec')
+        model.save('trained_models/word2vec/stack_traces_' + current_date + '_model.pickle')
 
         return model
