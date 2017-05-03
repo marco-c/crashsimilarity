@@ -2,8 +2,7 @@ import multiprocessing
 import unittest
 import numpy as np
 
-
-from crashsimilarity import crash_similarity, utils
+from crashsimilarity import utils
 from crashsimilarity.models import doc2vec
 
 
@@ -121,8 +120,6 @@ class CrashSimilarityTest(unittest.TestCase):
         resp = self.model._read_corpus()
         self.assertEqual(type(resp), list)
         self.assertEqual(len(resp), 378)
-
-
 
     def test_train_model(self):
         resp = self.model._train_model()
