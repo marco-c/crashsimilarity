@@ -4,7 +4,7 @@ from crashsimilarity.models import word2vec
 if __name__ == '__main__':
     # download_data.download_crashes(days=7, product='Firefox')
     # paths = download_data.get_paths(days=7, product='Firefox')
-    paths = ['../crashsimilarity_data/firefox-crashes-2016-11-09.json.gz'
+    paths = ['../crashsimilarity_data/firefox-crashes-2016-11-09.json.gz',
              '../crashsimilarity_data/firefox-crashes-2016-11-08.json.gz',
              '../crashsimilarity_data/firefox-crashes-2016-11-07.json.gz',
              '../crashsimilarity_data/firefox-crashes-2016-11-06.json.gz',

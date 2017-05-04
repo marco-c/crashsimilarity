@@ -1,6 +1,7 @@
 import bisect
 import time
 import logging
+import os
 
 import gensim
 import numpy as np
@@ -54,6 +55,23 @@ class EmbeddingAlgo(object):
     @abstractmethod
     def _train_model(self, force_train=False):
         pass
+
+    @staticmethod
+    def delete_old_models(current_date, path, force_train):
+        """
+        Get list of trained models inside the models directory,
+        delete all models in case of user forces new training,
+        if not, delete all models except of today's model
+        """
+        if not os.path.isdir(path):
+            return
+
+        if force_train:
+            old_models = [model for model in os.listdir(path)]
+        else:
+            old_models = [model for model in os.listdir(path) if current_date not in model]
+        for model in old_models:
+            os.remove(path + model)
 
     def wmdistance(self, document1, document2, all_distances, distance_metric='cosine'):
         model = self._model

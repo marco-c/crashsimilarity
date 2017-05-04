@@ -23,7 +23,7 @@ class Word2Vec(EmbeddingAlgo):
 
     def _train_model(self, force_train=False):
         current_date = datetime.now().strftime('%d%b%Y')
-        utils.delete_old_models(current_date, 'trained_models/word2vec/', force_train)
+        self.delete_old_models(current_date, 'trained_models/word2vec/', force_train)
 
         if os.path.exists('trained_models/word2vec/stack_traces_' + current_date + '_model.pickle'):
             return gensim.models.Word2Vec.load(
