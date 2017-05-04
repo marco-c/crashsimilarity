@@ -87,7 +87,7 @@ def delete_old_models(current_date, path, force_train):
 
 def create_dir(path):
     try:
-        os.mkdir(path)
+        os.makedirs(path)
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise e
