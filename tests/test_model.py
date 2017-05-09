@@ -13,8 +13,10 @@ class CrashSimilarityTest(unittest.TestCase):
         self.paths = ['tests/test.json']
         self.doc2vec_model = doc2vec.Doc2Vec(self.paths)
         self.doc2vec_trained_model = self.doc2vec_model.get_model()
+        self.doc2vec_trained_model.init_sims(replace=True)
         self.word2vec_model = word2vec.Word2Vec(self.paths)
         self.word2vec_trained_model = self.word2vec_model.get_model()
+        self.word2vec_trained_model.init_sims(replace=True)
 
     # Test if equal reports have distance 0 and different reports have difference greater than 0
     def zero_dist_coherence(self, model):
@@ -42,7 +44,7 @@ class CrashSimilarityTest(unittest.TestCase):
         self.zero_dist_coherence(self.word2vec_model)
 
     # Test if reports with the same words in different order have distance different than zero
-    @unittest.expectedFailure
+
     def order_similarity(self, model):
 
         signature1 = 'mozilla::testOrdem1'
@@ -57,6 +59,7 @@ class CrashSimilarityTest(unittest.TestCase):
 
         self.assertTrue(dist_mid < dist_end)
 
+    @unittest.expectedFailure
     def test_order_similarity(self):
         self.order_similarity(self.doc2vec_model)
         self.order_similarity(self.word2vec_model)
