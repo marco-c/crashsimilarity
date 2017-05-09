@@ -1,8 +1,11 @@
 import unittest
+import requests_mock
+import json
 from datetime import datetime
 
 from crashsimilarity import utils
 from crashsimilarity.utils import StackTraceProcessor
+from crashsimilarity.utils import StackTracesGetter
 
 
 class UtilsTest(unittest.TestCase):
@@ -51,3 +54,23 @@ class StackTraceProcessorTest(unittest.TestCase):
     def test_process(self):
         actual = list(StackTraceProcessor.process(self.raw_traces))
         self.assertEqual(actual, self.expected_traces)
+
+
+class StackTracesGetterTest(unittest.TestCase):
+    paths = ['tests/test.json']
+
+    def test_get_stack_traces_for_signature(self):
+        signature = 'js::GCMarker::processMarkStackTop'
+        resp = StackTracesGetter.get_stack_traces_for_signature(self.paths, signature)
+        for line in utils.read_files(self.paths):
+            data = json.loads(line)
+            if data['signature'] == signature:
+                assert data['proto_signature'] in resp
+
+    def test_get_stack_trace_for_uuid(self):
+        proto_signature = 'js::GCMarker::processMarkStackTop | js::GCMarker::drainMarkStack | js::gc::GCRuntime::incrementalCollectSlice | js::gc::GCRuntime::gcCycle | js::gc::GCRuntime::collect | JS::StartIncrementalGC | nsJSContext::GarbageCollectNow | nsTimerImpl::Fire | nsTimerEvent::Run | nsThread::ProcessNextEvent | NS_ProcessPendingEvents | nsBaseAppShell::NativeEventCallback | nsAppShell::ProcessGeckoEvents | CoreFoundation@0xa74b0 | CoreFoundation@0x8861c | CoreFoundation@0x87b15 | CoreFoundation@0x87513 | HIToolbox@0x312ab | HIToolbox@0x310e0 | HIToolbox@0x30f15 | AppKit@0x476cc | AppKit@0x7be82f | CoreFoundation@0x9e3a1 | AppKit@0xc56609 | AppKit@0xc9e7f7 | AppKit@0xc9e387 | AppKit@0xc567a9 | AppKit@0xc5867b | AppKit@0xc57ccc | AppKit@0xc5a9c2 | AppKit@0x47c2ed | AppKit@0x47c304 | AppKit@0xcdcf03 | AppKit@0xc56e2b | AppKit@0xc579af | AppKit@0xcdcee2 | AppKit@0xc5e77b | AppKit@0xc9897a | AppKit@0xc9c88c | AppKit@0xc7f10e'
+        uuid = '90dcebb6-f711-4a8b-9e68-5abf72161109'
+        with requests_mock.Mocker() as m:
+            m.get('https://crash-stats.mozilla.com/api/ProcessedCrash', json={'proto_signature': proto_signature})
+            resp = StackTracesGetter.get_stack_trace_for_uuid(uuid)
+            self.assertEqual(resp, proto_signature)

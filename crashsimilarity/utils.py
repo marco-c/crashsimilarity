@@ -1,9 +1,11 @@
 import errno
 import json
 import os
-from datetime import datetime
 
+from datetime import datetime
 from smart_open import smart_open
+
+from crashsimilarity.downloader import SocorroDownloader
 
 
 def utc_today():
@@ -15,6 +17,24 @@ def read_files(file_names, open_file_function=smart_open):
         with open_file_function(name) as f:
             for line in f:
                 yield line if isinstance(line, str) else line.decode('utf8')
+
+
+class StackTracesGetter(object):
+    @staticmethod
+    def get_stack_traces_for_signature(fnames, signature, traces_num=100):
+        traces = SocorroDownloader().download_stack_traces_for_signature(signature, traces_num)
+
+        for line in read_files(fnames):
+            data = json.loads(line)
+            if data['signature'] == signature:
+                traces.add(data['proto_signature'])
+
+        return list(traces)
+
+    @staticmethod
+    def get_stack_trace_for_uuid(uuid):
+        data = SocorroDownloader().download_crash(uuid)
+        return data['proto_signature']
 
 
 class StackTraceProcessor(object):  # just a namespace, actually
@@ -50,13 +70,10 @@ class StackTraceProcessor(object):  # just a namespace, actually
 
 def create_dir(path):
     try:
-        os.mkdir(path)
+        os.makedirs(path)
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise e
-
-
-CRASHSIMILARITY_DATA_DIR = '../crashsimilarity_data'
 
 
 def crashes_dump_file_path(day, product, data_dir):
