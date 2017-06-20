@@ -50,6 +50,10 @@ class Doc2vecModelWrapper(object):
         return Doc2vecModelWrapper(corpus, None)
 
     @staticmethod
+    def load_or_retrain():
+        raise NotImplementedError
+
+    @staticmethod
     def delete_old_models(current_date, path, force_train):
         raise NotImplementedError
 
