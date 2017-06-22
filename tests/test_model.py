@@ -3,7 +3,7 @@ import multiprocessing
 import numpy as np
 
 from crashsimilarity import utils
-from crashsimilarity.models import doc2vec, word2vec
+from crashsimilarity.models import doc2vec
 
 
 class CrashSimilarityTest(unittest.TestCase):
@@ -14,9 +14,6 @@ class CrashSimilarityTest(unittest.TestCase):
         self.doc2vec_model = doc2vec.Doc2Vec(self.paths)
         self.doc2vec_trained_model = self.doc2vec_model.get_model()
         self.doc2vec_trained_model.init_sims(replace=True)
-        self.word2vec_model = word2vec.Word2Vec(self.paths)
-        self.word2vec_trained_model = self.word2vec_model.get_model()
-        self.word2vec_trained_model.init_sims(replace=True)
 
     # Test if equal reports have distance 0 and different reports have difference greater than 0
     def zero_dist_coherence(self, model):
@@ -41,7 +38,6 @@ class CrashSimilarityTest(unittest.TestCase):
 
     def test_zero_dist_coherence(self):
         self.zero_dist_coherence(self.doc2vec_model)
-        self.zero_dist_coherence(self.word2vec_model)
 
     # Test if reports with the same words in different order have distance different than zero
 
@@ -62,7 +58,6 @@ class CrashSimilarityTest(unittest.TestCase):
     @unittest.expectedFailure
     def test_order_similarity(self):
         self.order_similarity(self.doc2vec_model)
-        self.order_similarity(self.word2vec_model)
 
     def wmdistance_cosine_non_zero_distance(self, model, trained_model):
         doc1 = "KiFastSystemCallRet | NtWaitForMultipleObjects | WaitForMultipleObjectsEx | RealMsgWaitForMultipleObjectsEx | CCliModalLoop::BlockFn | CoWaitForMultipleHandles | mozilla::ipc::MessageChannel::WaitForSyncNotifyWithA11yReentry | mozilla::ipc::MessageChannel::WaitForSyncNotify | mozilla::ipc::MessageChannel::Send | mozilla::dom::PScreenManagerChild::SendScreenRefresh | mozilla::widget::ScreenProxy::EnsureCacheIsValid | mozilla::widget::ScreenProxy::GetColorDepth | gfxPlatform::PopulateScreenInfo | gfxPlatform::Init | mozilla::dom::ContentProcess::Init | XRE_InitChildProcess | content_process_main | wmain | remainder | remainder | WinSqmStartSession | _SEH_epilog4 | WinSqmStartSession | _RtlUserThreadStart"
@@ -131,16 +126,12 @@ class CrashSimilarityTest(unittest.TestCase):
 
     def test_wmdistance(self):
         self.wmdistance_cosine_non_zero_distance(self.doc2vec_model, self.doc2vec_trained_model)
-        self.wmdistance_cosine_non_zero_distance(self.word2vec_model, self.word2vec_trained_model)
 
         self.wmdistance_cosine_zero_distance(self.doc2vec_model, self.doc2vec_trained_model)
-        self.wmdistance_cosine_zero_distance(self.word2vec_model, self.word2vec_trained_model)
 
         self.wmdistance_euclidean_non_zero_distance(self.doc2vec_model, self.doc2vec_trained_model)
-        self.wmdistance_euclidean_non_zero_distance(self.word2vec_model, self.word2vec_trained_model)
 
         self.wmdistance_euclidean_zero_distance(self.doc2vec_model, self.doc2vec_trained_model)
-        self.wmdistance_euclidean_zero_distance(self.word2vec_model, self.word2vec_trained_model)
 
     def read_corpus(self, model):
         resp = model._read_corpus()
@@ -149,7 +140,6 @@ class CrashSimilarityTest(unittest.TestCase):
 
     def test_read_corpus(self):
         self.read_corpus(self.doc2vec_model)
-        self.read_corpus(self.word2vec_model)
 
     def train_model(self, model):
         resp = model._train_model()
@@ -164,4 +154,3 @@ class CrashSimilarityTest(unittest.TestCase):
 
     def test_train_model(self):
         self.train_model(self.doc2vec_model)
-        self.train_model(self.word2vec_model)
