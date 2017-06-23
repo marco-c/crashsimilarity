@@ -1,8 +1,13 @@
 # CLI INTERFACE THAT TAKES STACK TRACE AS INPUT AND RETURNS SIMILAR STACK TRACES
+import pprint
+
 from crashsimilarity.downloader import SocorroDownloader
-from crashsimilarity import crash_similarity
 import argparse
 import sys
+
+from crashsimilarity.models.gensim_model_wrapper import Doc2vecModelWrapper
+from crashsimilarity.models.similarity.doc2vec_similarity import Doc2VecSimilarity
+from crashsimilarity.models.wmd_calculator import WMDCalculator
 
 
 def parse_args(args):
@@ -15,21 +20,15 @@ def parse_args(args):
 
 if __name__ == '__main__':
     args = parse_args(sys.argv[1:])
-    # downloads some data (e.g. the past 7 days)
+
     SocorroDownloader.download_and_save_crashes(days=7, product=args.product)
     paths = SocorroDownloader.get_dump_paths(days=7, product=args.product)
 
-    # reads the corpus
-    corpus = crash_similarity.read_corpus(paths)
+    model_with_corpus = Doc2vecModelWrapper.read_corpus(paths).train_model()
+    algo = Doc2VecSimilarity(WMDCalculator.build_with_all_distances(model_with_corpus.model, model_with_corpus.corpus))
 
-    # trains the model on that data
-    model = crash_similarity.train_model(corpus)
-
-    # gets the stack_trace corresponding to the crash_id (input by the user as an argument)
     stack_trace = SocorroDownloader().download_crash(args.crash_id)['proto_signature']
 
-    # returns the top similar stack traces (number of stack traces returned = args.top)
-    similarities = crash_similarity.top_similar_traces(model, corpus, stack_trace, args.top)
+    similarities = algo.top_similar_traces(stack_trace, model_with_corpus.corpus)
 
-    for similarity in similarities:
-        print(u'%s: <%s>\n' % ((corpus[similarity[0]].tags[1], similarity[1]), ' '.join(corpus[similarity[0]].words)))
+    pprint.pprint(similarities)
