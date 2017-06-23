@@ -1,3 +1,4 @@
+scikit-learn=0.18.11
 pyemd==0.4.3
 gensim==1.0.1
 smart_open==1.5.1
