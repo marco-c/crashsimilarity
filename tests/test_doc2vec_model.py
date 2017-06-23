@@ -9,7 +9,7 @@ from crashsimilarity.models.wmd_calculator import WMDCalculator
 
 
 class Doc2VecModelTest(unittest.TestCase):
-    PATH = ['tests/test.json']
+    PATH = ['test.json']
 
     @classmethod
     def setUpClass(cls):
@@ -51,14 +51,15 @@ class Doc2VecModelTest(unittest.TestCase):
         algo = Doc2VecSimilarity(self.wmd_calculator)
 
         actual = algo.signatures_similarity(signature1, signature2)
-        self.assertEqual(actual, np.inf)
+        self.assertSetEqual(set(actual[:3]), {(0, 1, 0.0), (1, 2, 0.0), (2, 0, 0.0)})
 
-        actual = algo.signatures_similarity(signature1, signature3)
-        self.assertGreater(actual, 0)
-        self.assertNotEqual(actual, np.inf)
+        actual1 = algo.signatures_similarity(signature1, signature3)
+        actual2 = algo.signatures_similarity(signature3, signature1)
+        actual2 = [(i[1], i[0], i[2]) for i in actual2]
+        self.assertSequenceEqual(actual1, actual2)
 
         actual = algo.signatures_similarity([], [])
-        self.assertEqual(actual, np.inf)
+        self.assertListEqual(actual, [])
 
     def test_signature_coherence(self):
         trace1 = self.corpus[100].words

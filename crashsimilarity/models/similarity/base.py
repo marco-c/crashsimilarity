@@ -52,14 +52,12 @@ class GenericSimilarity(Algorithm):
         return similarities[:top_n]
 
     def signatures_similarity(self, signature1, signature2):
-        if set([tuple(i) for i in signature1]) == set([tuple(i) for i in signature2]):
-            return np.inf
-        means = []
-        for trace in signature1:
-            cur = [self.distance(trace, other) for other in signature2]
-            means.append(np.mean(cur))  # TODO: not so stupid?
-        mean = np.mean(means)
-        return 1 / mean if mean != 0 else np.inf
+        similarities = []
+        for i, trace1 in enumerate(signature1):
+            for j, trace2 in enumerate(signature2):
+                similarities.append((i, j, self.distance(trace1, trace2)))
+
+        return sorted(similarities, key=lambda v: v[2])
 
     def signature_coherence(self, signature):
         coherence = np.zeros((len(signature), len(signature)))

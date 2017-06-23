@@ -1,7 +1,11 @@
 from crashsimilarity.downloader import SocorroDownloader
-from crashsimilarity import crash_similarity
 import argparse
 import sys
+
+from crashsimilarity.models.gensim_model_wrapper import Doc2vecModelWrapper
+from crashsimilarity.models.similarity.doc2vec_similarity import Doc2VecSimilarity
+from crashsimilarity.models.wmd_calculator import WMDCalculator
+from crashsimilarity.utils import StackTracesGetter
 
 
 def parse_args(args):
@@ -18,15 +22,14 @@ if __name__ == '__main__':
 
     SocorroDownloader.download_and_save_crashes(days=3, product=args.product)
     paths = SocorroDownloader.get_dump_paths(days=3, product=args.product)
-    # paths = ['crashsimilarity_data/firefox-crashes-2016-11-09.json', 'crashsimilarity_data/firefox-crashes-2016-11-08.json', 'crashsimilarity_data/firefox-crashes-2016-11-07.json', 'crashsimilarity_data/firefox-crashes-2016-11-06.json', 'crashsimilarity_data/firefox-crashes-2016-11-05.json', 'crashsimilarity_data/firefox-crashes-2016-11-04.json', 'crashsimilarity_data/firefox-crashes-2016-11-03.json']
 
-    corpus = crash_similarity.read_corpus(paths)
-
-    model = crash_similarity.train_model(corpus)
+    model_with_corpus = Doc2vecModelWrapper.read_corpus(paths).train_model()
+    algo = Doc2VecSimilarity(WMDCalculator.build_with_all_distances(model_with_corpus.model, model_with_corpus.corpus))
 
     print(args.one + ' vs ' + args.two)
-    # similarities = crash_similarity.signature_similarity(model, paths,'shutdownhang | js::GCMarker::processMarkStackTop','shutdownhang | js::GCMarker::processMarkStackTop')
-    similarities = crash_similarity.signature_similarity(model, paths, args.one, args.two)
+    traces1 = StackTracesGetter.get_stack_traces_for_signature(paths, args.one)
+    traces2 = StackTracesGetter.get_stack_traces_for_signature(paths, args.two)
+    similarities = algo.signatures_similarity(traces1, traces2)
     print('Top ' + str(args.top))
     for similarity in similarities[:args.top]:
         print(u'%s\n%s\n%s\n' % (similarity[2], similarity[0], similarity[1]))
