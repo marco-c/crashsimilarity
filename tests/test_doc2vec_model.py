@@ -1,6 +1,8 @@
 import random
 import unittest
 
+import numpy as np
+
 from crashsimilarity.models.gensim_model_wrapper import Doc2vecModelWrapper
 from crashsimilarity.models.similarity.doc2vec_similarity import Doc2VecSimilarity
 from crashsimilarity.models.wmd_calculator import WMDCalculator
@@ -35,4 +37,35 @@ class Doc2VecModelTest(unittest.TestCase):
         expected = list(enumerate([self.wmd_calculator.wmdistance(target_trace, c.words) for c in self.corpus]))
         expected = [i[0] for i in sorted(expected, key=lambda x: x[1])[:10]]  # compare document indexes
         actual = [i[0] for i in algo.top_similar_traces(target_trace, self.corpus, 10)]
-        self.assertEquals(actual, expected)
+        self.assertEqual(actual, expected)
+
+    def test_signatures_similarity(self):
+        trace1 = self.corpus[100].words
+        trace2 = self.corpus[42].words
+        trace3 = self.corpus[123].words
+        trace4 = self.corpus[201].words
+        signature1 = [trace1, trace2, trace3]
+        signature2 = [trace3, trace1, trace2]
+        signature3 = [trace4, trace3]
+
+        algo = Doc2VecSimilarity(self.wmd_calculator)
+
+        actual = algo.signatures_similarity(signature1, signature2)
+        self.assertEqual(actual, np.inf)
+
+        actual = algo.signatures_similarity(signature1, signature3)
+        self.assertGreater(actual, 0)
+        self.assertNotEqual(actual, np.inf)
+
+        actual = algo.signatures_similarity([], [])
+        self.assertEqual(actual, np.inf)
+
+    def test_signature_coherence(self):
+        trace1 = self.corpus[100].words
+        trace2 = self.corpus[42].words
+        signature = [trace1, trace2]
+        algo = Doc2VecSimilarity(self.wmd_calculator)
+        actual = algo.signature_coherence(signature).tolist()
+        expected = [[np.inf, 1 / self.wmd_calculator.wmdistance(trace1, trace2)],
+                    [1 / self.wmd_calculator.wmdistance(trace2, trace1), np.inf]]
+        self.assertSequenceEqual(actual, expected)

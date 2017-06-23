@@ -44,6 +44,7 @@ class GenericSimilarity(Algorithm):
             return 1 / d if d != 0 else np.inf
 
         self.similarity = similarity_calculator
+        self.distance = distance_calculator
 
     def top_similar_traces(self, stack_trace, corpus, top_n):
         similarities = [(i, self.similarity(stack_trace, c)) for i, c in enumerate(corpus)]
@@ -51,11 +52,14 @@ class GenericSimilarity(Algorithm):
         return similarities[:top_n]
 
     def signatures_similarity(self, signature1, signature2):
+        if set([tuple(i) for i in signature1]) == set([tuple(i) for i in signature2]):
+            return np.inf
         means = []
         for trace in signature1:
-            cur = [self.similarity(trace, other) for other in signature2]
+            cur = [self.distance(trace, other) for other in signature2]
             means.append(np.mean(cur))  # TODO: not so stupid?
-        return np.mean(means)
+        mean = np.mean(means)
+        return 1 / mean if mean != 0 else np.inf
 
     def signature_coherence(self, signature):
         coherence = np.zeros((len(signature), len(signature)))

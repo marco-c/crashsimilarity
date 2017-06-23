@@ -1,6 +1,6 @@
 from gensim.models.doc2vec import TaggedDocument
 
-from crashsimilarity.models.similarity.base import Algorithm
+from crashsimilarity.models.similarity.base import Algorithm, GenericSimilarity
 
 
 class Doc2VecSimilarity(Algorithm):
@@ -40,7 +40,10 @@ class Doc2VecSimilarity(Algorithm):
         # return sorted(similarities, key=lambda v: v[1])[:top_n]
 
     def signatures_similarity(self, signature1, signature2):
-        pass
+        _signature1 = [t.words if isinstance(t, TaggedDocument) else t for t in signature1]
+        _signature2 = [t.words if isinstance(t, TaggedDocument) else t for t in signature2]
+        return GenericSimilarity(self._calculator.wmdistance).signatures_similarity(_signature1, _signature2)
 
     def signature_coherence(self, signature):
-        pass
+        _signature = [t.words if isinstance(t, TaggedDocument) else t for t in signature]
+        return GenericSimilarity(self._calculator.wmdistance).signature_coherence(_signature)
