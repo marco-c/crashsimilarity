@@ -27,3 +27,7 @@ def edit_distance(s1, s2, ins_cost=lambda a, b: 1, del_cost=lambda a, b: 1, subs
         previous_row = current_row
 
     return previous_row[-1]
+
+
+def edit_distance_structural(trace1, trace2):
+    return edit_distance(trace1, trace2, structural_word_distance, structural_word_distance, structural_word_distance)
