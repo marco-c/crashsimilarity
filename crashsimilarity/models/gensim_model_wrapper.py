@@ -39,7 +39,7 @@ class Doc2vecModelWrapper(object):
         logging.debug('vocabulary size: {}'.format(len(self.model.wv.vocab)))
         start_time = time.time()
         logging.info('Training started...')
-        self.model.train(self.corpus)
+        self.model.train(self.corpus, total_examples=self.model.corpus_count, epochs=self.model.iter)
         logging.info('Model trained in {} seconds'.format(time.time() - start_time))
         return self
 
