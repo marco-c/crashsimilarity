@@ -1,8 +1,13 @@
-# CLI INTERFACE THAT EVALUATES THE SIMILARITY BETWEEN STACK TRACES IN A GIVEN SIGNATURE.
+import pprint
+
 from crashsimilarity.downloader import SocorroDownloader
-from crashsimilarity import crash_similarity
 import sys
 import argparse
+
+from crashsimilarity.models.gensim_model_wrapper import Doc2vecModelWrapper
+from crashsimilarity.models.similarity.doc2vec_similarity import Doc2VecSimilarity
+from crashsimilarity.models.wmd_calculator import WMDCalculator
+from crashsimilarity.utils import StackTracesGetter
 
 
 def parse_args(args):
@@ -16,23 +21,18 @@ def parse_args(args):
 if __name__ == '__main__':
     args = parse_args(sys.argv[1:])
 
-    # Downloads some data (e.g. the past 7 days)
     SocorroDownloader.download_and_save_crashes(days=7, product=args.product)
     paths = SocorroDownloader.get_dump_paths(days=7, product=args.product)
 
-    # Reads the corpus
-    corpus = crash_similarity.read_corpus(paths)
+    model_with_corpus = Doc2vecModelWrapper.read_corpus(paths).train_model()
+    algo = Doc2VecSimilarity(WMDCalculator.build_with_all_distances(model_with_corpus.model, model_with_corpus.corpus))
 
-    # Trains the model on that data
-    model = crash_similarity.train_model(corpus)
-
-    # Evaluates the similarity between the stack traces in a given signature.
     print(args.signature + ' \n')
+    traces = StackTracesGetter.get_stack_traces_for_signature(paths, args.one)
+    similarities = algo.signature_coherence(traces)
 
-    similarities = crash_similarity.signature_similarity(model, paths, args.signature, args.signature)
-    print('Top ' + str(args.top))
-    for similarity in similarities[:args.top]:
-        print(u'%s\n%s\n%s\n' % (similarity[2], similarity[0], similarity[1]))
-    print('Bottom ' + str(args.top))
-    for similarity in similarities[-int(args.top):]:
-        print(u'%s\n%s\n%s\n' % (similarity[2], similarity[0], similarity[1]))
+    print('signature:')
+    for t in traces:
+        print(t)
+    print('coherence matrix:')
+    pprint.pprint(similarities)
