@@ -1,4 +1,5 @@
-# CLI INTERFACE THAT EVALUATES THE SIMILARITY BETWEEN STACK TRACES IN A GIVEN SIGNATURE.
+import pprint
+
 from crashsimilarity.downloader import SocorroDownloader
 import sys
 import argparse
@@ -28,10 +29,10 @@ if __name__ == '__main__':
 
     print(args.signature + ' \n')
     traces = StackTracesGetter.get_stack_traces_for_signature(paths, args.one)
-    similarities = algo.signatures_similarity(traces, traces)
-    print('Top ' + str(args.top))
-    for similarity in similarities[:args.top]:
-        print(u'%s\n%s\n%s\n' % (similarity[2], similarity[0], similarity[1]))
-    print('Bottom ' + str(args.top))
-    for similarity in similarities[-int(args.top):]:
-        print(u'%s\n%s\n%s\n' % (similarity[2], similarity[0], similarity[1]))
+    similarities = algo.signature_coherence(traces)
+
+    print('signature:')
+    for t in traces:
+        print(t)
+    print('coherence matrix:')
+    pprint.pprint(similarities)

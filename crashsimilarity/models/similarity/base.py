@@ -15,10 +15,9 @@ class Algorithm(object):
 
     @abstractmethod
     def signatures_similarity(self, signature1, signature2):
-        """Evaluates the similarity between two given signatures (by evaluating the similarity between the stack
-        traces that are in those signatures)
+        """Evaluates the similarity between stack traces in two given signatures
 
-        :rtype: float
+        :return: stack traces similarities matrix with shape (len(signature1), len(signature2))
         """
         pass
 
@@ -26,7 +25,7 @@ class Algorithm(object):
     def signature_coherence(self, signature):
         """Evaluates the similarity between the stack traces in a given signature
 
-        :return: similarities matrix
+        :return: stack traces similarities matrix with shape (len(signature), len(signature))
         """
         pass
 
@@ -52,16 +51,11 @@ class GenericSimilarity(Algorithm):
         return similarities[:top_n]
 
     def signatures_similarity(self, signature1, signature2):
-        similarities = []
+        similarities = np.zeros((len(signature1), len(signature2)))
         for i, trace1 in enumerate(signature1):
             for j, trace2 in enumerate(signature2):
-                similarities.append((i, j, self.distance(trace1, trace2)))
-
-        return sorted(similarities, key=lambda v: v[2])
+                similarities[i][j] = self.similarity(trace1, trace2)
+        return similarities
 
     def signature_coherence(self, signature):
-        coherence = np.zeros((len(signature), len(signature)))
-        for i in range(len(signature)):
-            for j in range(i, len(signature)):
-                coherence[i, j] = coherence[j, i] = self.similarity(signature[i], signature[j])
-        return coherence
+        return self.signatures_similarity(signature, signature)

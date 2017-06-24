@@ -1,3 +1,5 @@
+import pprint
+
 from crashsimilarity.downloader import SocorroDownloader
 import argparse
 import sys
@@ -30,9 +32,12 @@ if __name__ == '__main__':
     traces1 = StackTracesGetter.get_stack_traces_for_signature(paths, args.one)
     traces2 = StackTracesGetter.get_stack_traces_for_signature(paths, args.two)
     similarities = algo.signatures_similarity(traces1, traces2)
-    print('Top ' + str(args.top))
-    for similarity in similarities[:args.top]:
-        print(u'%s\n%s\n%s\n' % (similarity[2], similarity[0], similarity[1]))
-    print('Bottom ' + str(args.top))
-    for similarity in similarities[-int(args.top):]:
-        print(u'%s\n%s\n%s\n' % (similarity[2], similarity[0], similarity[1]))
+
+    print('first signature:')
+    for t in traces1:
+        print(t)
+    print('second signature:')
+    for t in traces2:
+        print(t)
+    print('similarities matrix:')
+    pprint.pprint(similarities)

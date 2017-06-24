@@ -62,17 +62,24 @@ class Doc2VecModelTest(unittest.TestCase):
 
         algo = Doc2VecSimilarity(self.wmd_calculator)
 
-        actual = algo.signatures_similarity(signature1, signature2)
-        self.assertSetEqual(set(actual[:3]), {(0, 1, 0.0), (1, 2, 0.0), (2, 0, 0.0)})
+        my_wmd = algo._calculator.wmdistance
 
-        actual1 = algo.signatures_similarity(signature1, signature3)
-        actual1 = [i[:2] for i in actual1]
-        actual2 = algo.signatures_similarity(signature3, signature1)
-        actual2 = [(i[1], i[0]) for i in actual2]
-        self.assertSequenceEqual(actual1, actual2)
+        actual = algo.signatures_similarity(signature1, signature2)
+        self.assertTupleEqual(actual.shape, (3, 3))
+        expected = [[1 / my_wmd(trace1, trace3), np.inf, 1 / my_wmd(trace1, trace2)],
+                    [1 / my_wmd(trace2, trace3), 1 / my_wmd(trace2, trace1), np.inf],
+                    [np.inf, 1 / my_wmd(trace3, trace1), 1 / my_wmd(trace3, trace2)]]
+        self.assertListEqual(actual.tolist(), expected)
+
+        actual = algo.signatures_similarity(signature1, signature3)
+        self.assertTupleEqual(actual.shape, (3, 2))
+
+        actual = algo.signatures_similarity(signature3, signature2)
+        self.assertTupleEqual(actual.shape, (2, 3))
 
         actual = algo.signatures_similarity([], [])
-        self.assertListEqual(actual, [])
+        self.assertTupleEqual(actual.shape, (0, 0))
+        self.assertListEqual(actual.tolist(), [])
 
     def test_signature_coherence(self):
         trace1 = self.corpus[100].words
@@ -82,4 +89,4 @@ class Doc2VecModelTest(unittest.TestCase):
         actual = algo.signature_coherence(signature).tolist()
         expected = [[np.inf, 1 / self.wmd_calculator.wmdistance(trace1, trace2)],
                     [1 / self.wmd_calculator.wmdistance(trace2, trace1), np.inf]]
-        self.assertSequenceEqual(actual, expected)
+        self.assertListEqual(actual, expected)
