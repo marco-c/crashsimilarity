@@ -9,7 +9,7 @@ from crashsimilarity.models.wmd_calculator import WMDCalculator
 
 
 class Doc2VecModelTest(unittest.TestCase):
-    PATH = ['test.json']
+    PATH = ['tests/test.json']
 
     @classmethod
     def setUpClass(cls):
@@ -21,6 +21,18 @@ class Doc2VecModelTest(unittest.TestCase):
     def test_WMDCalculator(self):
         self.assertEqual(self.wmd_calculator.dist.shape[0], self.wmd_calculator.dist.shape[1])
         self.assertEqual(self.wmd_calculator.dist.shape[0], len(self.model.wv.vocab))
+
+        # test associativity
+        random_traces = list(set([random.randint(0, len(self.corpus) - 1) for _ in range(10)]))
+        for i in random_traces:
+            for j in random_traces:
+                doc1 = self.corpus[i].words
+                doc2 = self.corpus[j].words
+                actual1 = self.wmd_calculator.wmdistance(doc1, doc2)
+                actual2 = self.wmd_calculator.wmdistance(doc2, doc1)
+                expected = self.model.wmdistance(doc1, doc2)
+                self.assertAlmostEqual(actual1, actual2, places=5)
+                self.assertAlmostEqual(actual1, expected, places=5)
 
         random_traces = list(set([random.randint(0, len(self.corpus) - 1) for _ in range(50)]))
         for i in random_traces:
@@ -54,8 +66,9 @@ class Doc2VecModelTest(unittest.TestCase):
         self.assertSetEqual(set(actual[:3]), {(0, 1, 0.0), (1, 2, 0.0), (2, 0, 0.0)})
 
         actual1 = algo.signatures_similarity(signature1, signature3)
+        actual1 = [i[:2] for i in actual1]
         actual2 = algo.signatures_similarity(signature3, signature1)
-        actual2 = [(i[1], i[0], i[2]) for i in actual2]
+        actual2 = [(i[1], i[0]) for i in actual2]
         self.assertSequenceEqual(actual1, actual2)
 
         actual = algo.signatures_similarity([], [])

@@ -29,14 +29,6 @@ class WMDCalculator(object):
             rwmd = float('inf')
         return rwmd
 
-    def _create_distance_matrix(self, dictionary):
-        distances = np.zeros((len(dictionary), len(dictionary)), dtype=np.double)
-        view = list(dictionary.items())
-        for i, w1 in dictionary.items():
-            for j, w2 in view[i:]:
-                distances[i, j] = distances[j, i] = self.dist[int(w1), int(w2)]
-        return distances
-
     def wmdistance(self, words1, words2):
         words1 = [w for w in words1 if w in self.model]
         words1 = [str(self.w2pos[w]) for w in words1 if w in self.w2pos]
@@ -51,6 +43,18 @@ class WMDCalculator(object):
         if vocab_len == 1:
             return 0.0
 
+        docset1, docset2 = set(words1), set(words2)
+
+        distance_matrix = np.zeros((vocab_len, vocab_len), dtype=np.double)
+        for i, t1 in dictionary.items():
+            for j, t2 in dictionary.items():
+                if t1 not in docset1 or t2 not in docset2:
+                    continue
+                distance_matrix[i, j] = self.dist[int(t1), int(t2)]
+
+        if np.sum(distance_matrix) == 0.0:
+            return float('inf')
+
         def create_bow(doc):
             norm_bow = np.zeros(vocab_len, dtype=np.double)
             bow = dictionary.doc2bow(doc)
@@ -61,9 +65,7 @@ class WMDCalculator(object):
         bow1 = create_bow(words1)
         bow2 = create_bow(words2)
 
-        distances = self._create_distance_matrix(dictionary)
-
-        return emd(bow1, bow2, distances)
+        return emd(bow1, bow2, distance_matrix)
 
     @staticmethod
     def build_with_all_distances(model, corpus, metric='euclidean'):
