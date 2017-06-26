@@ -5,7 +5,7 @@ import os
 from datetime import datetime
 from smart_open import smart_open
 
-from crashsimilarity.downloader import SocorroDownloader
+from crashsimilarity import downloader
 
 
 def utc_today():
@@ -22,7 +22,7 @@ def read_files(file_names, open_file_function=smart_open):
 class StackTracesGetter(object):
     @staticmethod
     def get_stack_traces_for_signature(fnames, signature, traces_num=100):
-        traces = SocorroDownloader().download_stack_traces_for_signature(signature, traces_num)
+        traces = downloader.SocorroDownloader().download_stack_traces_for_signature(signature, traces_num)
 
         for line in read_files(fnames):
             data = json.loads(line)
@@ -33,7 +33,7 @@ class StackTracesGetter(object):
 
     @staticmethod
     def get_stack_trace_for_uuid(uuid):
-        data = SocorroDownloader().download_crash(uuid)
+        data = downloader.SocorroDownloader().download_crash(uuid)
         return data['proto_signature']
 
 
