@@ -54,33 +54,42 @@ class BugzillaDownloader(Downloader):
             self._cache[key] = list(signatures)
         return list(signatures)
 
-    def download_bugs(self, filter_params):
-        key = ('bugzilla_bugs', filter_params, utils.utc_today())
-        if self._cache and key in self._cache:
-            logging.debug('get data from cache')
-            return self._cache[key]
-        response = self.get_with_retries(self._URL, filter_params)
-        bugs = self._json_or_raise(response)['bugs']
-        if self._cache is not None:
-            self._cache[key] = bugs
-        return bugs
-
-    def download_bugs_multiple_signatures(self, from_date, to_date, fields):
+    def download_bugs(self, from_date=None, to_date=None, fields=None, filter_params=None):
         """
         :param from_date: string "YYYY-MM-DD"
         :param to_date: string "YYYY-MM-DD"
         :param fields: list of strings
-        :return:
+        :param filter_params: dict
+        :return: list of bugs
         """
-        params = {'include_fields': ','.join(fields),
-                  'chfield': '[Bug creation]',
-                  'chfieldfrom': from_date,
-                  'chfieldto': to_date,
-                  'f2': 'cf_crash_signature',
-                  'o2': 'isnotempty',
-                  'product': ['Firefox', 'Core']
-                  }
-        return self.download_bugs(params)
+        if not filter_params:
+            filter_params = {'include_fields': ','.join(fields),
+                             'chfield': '[Bug creation]',
+                             'chfieldfrom': from_date,
+                             'chfieldto': to_date,
+                             'f2': 'cf_crash_signature',
+                             'o2': 'isnotempty',
+                             'product': ['Firefox', 'Core']
+                             }
+        else:
+            if 'chfieldfrom' not in filter_params:
+                filter_params['chfieldfrom'] = from_date
+            if 'chfieldto' not in filter_params:
+                filter_params['chfieldto'] = to_date
+            if 'include_fields' not in filter_params:
+                filter_params['include_fields'] = ','.join(fields)
+
+        key = ('bugzilla_bugs', filter_params, utils.utc_today())
+        if self._cache and key in self._cache:
+            logging.debug('get data from cache')
+            return self._cache[key]
+
+        response = self.get_with_retries(self._URL, filter_params)
+        bugs = self._json_or_raise(response)['bugs']
+
+        if self._cache is not None:
+            self._cache[key] = bugs
+        return bugs
 
 
 class SocorroDownloader(Downloader):
