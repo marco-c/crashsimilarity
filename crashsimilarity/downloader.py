@@ -50,7 +50,7 @@ class BugzillaDownloader(Downloader):
                 sig = sig[:pos]
             signatures.add(sig.strip())
 
-        if self._cache:
+        if self._cache is not None:
             self._cache[key] = list(signatures)
         return list(signatures)
 
@@ -82,7 +82,7 @@ class SocorroDownloader(Downloader):
         records = self._json_or_raise(response)['facets']['proto_signature']
         traces = set([r['term'] for r in records])
 
-        if self._cache:
+        if self._cache is not None:
             self._cache[key] = traces
         return traces
 
@@ -95,7 +95,7 @@ class SocorroDownloader(Downloader):
         params = {'crash_id': uuid}
         crash = self._json_or_raise(self.get_with_retries(self._PROCESSED_CRASH_URL, params))
 
-        if self._cache:
+        if self._cache is not None:
             self._cache[key] = crash
         return crash
 
