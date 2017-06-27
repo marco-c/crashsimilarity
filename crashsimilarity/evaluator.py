@@ -1,4 +1,5 @@
 import logging
+import math
 import pickle
 import re
 import time
@@ -46,3 +47,55 @@ class BugzillaClusters(object):
         signatures = [s[2:] if s.startswith('@ ') else s for s in signatures]
         signatures = [s.strip() for s in signatures]
         return list(set(signatures))
+
+
+class Metrics(object):  # just a namespace
+    @staticmethod
+    def true_positive(labels_true, labels_pred):
+        ans = set()
+        for i, a in enumerate(labels_true):
+            for j, b in enumerate(labels_true):
+                if j <= i:
+                    continue
+                if a == b and labels_pred[i] == labels_pred[j] and labels_pred[i] != -1:
+                    ans.add((min(i, j), max(i, j)))
+        return len(ans)
+
+    @staticmethod
+    def false_positive(labels_true, labels_pred):
+        ans = set()
+        for i, a in enumerate(labels_true):
+            for j, b in enumerate(labels_true):
+                if j <= i:
+                    continue
+                if a == b and labels_pred[i] != labels_pred[j] and labels_pred[i] != -1:
+                    ans.add((min(i, j), max(i, j)))
+        return len(ans)
+
+    @staticmethod
+    def false_negative(labels_true, labels_pred):
+        ans = set()
+        for i, a in enumerate(labels_true):
+            for j, b in enumerate(labels_true):
+                if j <= i:
+                    continue
+                if a != b and labels_pred[i] == labels_pred[j] and labels_pred[i] != -1:
+                    ans.add((min(i, j), max(i, j)))
+        return len(ans)
+
+    @staticmethod
+    def precision(labels_true, labels_pred):
+        return float(Metrics.true_positive(labels_true, labels_pred)) / (
+            Metrics.true_positive(labels_true, labels_pred) + Metrics.false_positive(labels_true, labels_pred))
+
+    @staticmethod
+    def recall(labels_true, labels_pred):
+        return float(Metrics.true_positive(labels_true, labels_pred)) / (
+            Metrics.true_positive(labels_true, labels_pred) + Metrics.false_negative(labels_true, labels_pred))
+
+    @staticmethod
+    def FMI(labels_true, labels_pred):
+        tp = Metrics.true_positive(labels_pred, labels_true)
+        fp = Metrics.false_positive(labels_pred, labels_true)
+        fn = Metrics.false_negative(labels_pred, labels_true)
+        return float(tp) / math.sqrt((tp + fp) * (tp + fn))
