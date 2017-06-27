@@ -1,6 +1,7 @@
 import errno
 import json
 import os
+from collections import namedtuple
 
 from datetime import datetime
 from smart_open import smart_open
@@ -37,6 +38,9 @@ class StackTracesGetter(object):
         return data['proto_signature']
 
 
+Compressed = namedtuple('Compressed', ['vocab', 'data'])
+
+
 class StackTraceProcessor(object):  # just a namespace, actually
     @staticmethod
     def should_skip(stack_trace):
@@ -55,17 +59,24 @@ class StackTraceProcessor(object):  # just a namespace, actually
         return traces
 
     @staticmethod
-    def process(stream, take_top_funcs=None):
+    def process(stream, take_top_funcs=None, compress=False):
+        vocab = dict()
         already_selected = set()
         for line in stream:
             data = json.loads(line)
             if StackTraceProcessor.should_skip(data['proto_signature']):
                 continue
             processed = StackTraceProcessor.preprocess(data['proto_signature'], take_top_funcs)
+            if compress:
+                for t in processed:
+                    if t not in vocab:
+                        vocab[t] = len(vocab)
+                processed = [str(vocab[i]) for i in processed]
             if frozenset(processed) not in already_selected:
                 # TODO: named tuple?
                 already_selected.add(frozenset(processed))
-                yield (processed, data['signature'].lower())
+                result = (processed, data['signature'].lower())
+                yield Compressed(vocab, result) if compress else result
 
 
 def create_dir(path):
