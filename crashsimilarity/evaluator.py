@@ -16,7 +16,7 @@ class BugzillaClusters(object):
     @staticmethod
     def download_bugs(from_date, to_date, fields=None):
         if fields is None:
-            fields = ['id, cf_crash_signature']
+            fields = ['id', 'cf_crash_signature']
         bugs = BugzillaDownloader().download_bugs(from_date, to_date, fields)
         signatures = []
         for bug in bugs:
@@ -38,8 +38,9 @@ class BugzillaClusters(object):
         self.stack_traces = stack_traces
         return self
 
-    def save(self):
-        pickle.dump(self, open('bugzilla_clusters_{}_{}.pickle'.format(self.from_date, self.to_date)))
+    def save(self, save_to_dir=''):
+        pickle.dump(self,
+                    open(save_to_dir + 'bugzilla_clusters_{}_{}.pickle'.format(self.from_date, self.to_date), 'wb'))
 
     @staticmethod
     def _clean_signatures(signatures):
