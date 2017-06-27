@@ -1,11 +1,12 @@
 import errno
 import json
 import os
+from collections import namedtuple
 
 from datetime import datetime
 from smart_open import smart_open
 
-from crashsimilarity.downloader import SocorroDownloader
+from crashsimilarity import downloader
 
 
 def utc_today():
@@ -22,7 +23,7 @@ def read_files(file_names, open_file_function=smart_open):
 class StackTracesGetter(object):
     @staticmethod
     def get_stack_traces_for_signature(fnames, signature, traces_num=100):
-        traces = SocorroDownloader().download_stack_traces_for_signature(signature, traces_num)
+        traces = downloader.SocorroDownloader().download_stack_traces_for_signature(signature, traces_num)
 
         for line in read_files(fnames):
             data = json.loads(line)
@@ -33,8 +34,11 @@ class StackTracesGetter(object):
 
     @staticmethod
     def get_stack_trace_for_uuid(uuid):
-        data = SocorroDownloader().download_crash(uuid)
+        data = downloader.SocorroDownloader().download_crash(uuid)
         return data['proto_signature']
+
+
+Compressed = namedtuple('Compressed', ['vocab', 'data'])
 
 
 class StackTraceProcessor(object):  # just a namespace, actually
@@ -55,17 +59,24 @@ class StackTraceProcessor(object):  # just a namespace, actually
         return traces
 
     @staticmethod
-    def process(stream, take_top_funcs=None):
+    def process(stream, take_top_funcs=None, compress=False):
+        vocab = dict()
         already_selected = set()
         for line in stream:
             data = json.loads(line)
             if StackTraceProcessor.should_skip(data['proto_signature']):
                 continue
             processed = StackTraceProcessor.preprocess(data['proto_signature'], take_top_funcs)
+            if compress:
+                for t in processed:
+                    if t not in vocab:
+                        vocab[t] = len(vocab)
+                processed = [str(vocab[i]) for i in processed]
             if frozenset(processed) not in already_selected:
                 # TODO: named tuple?
                 already_selected.add(frozenset(processed))
-                yield (processed, data['signature'].lower())
+                result = (processed, data['signature'].lower())
+                yield Compressed(vocab, result) if compress else result
 
 
 def create_dir(path):

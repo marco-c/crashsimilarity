@@ -44,8 +44,8 @@ class Doc2vecModelWrapper(object):
         return self
 
     @staticmethod
-    def read_corpus(file_names):
-        traces = StackTraceProcessor.process(utils.read_files(file_names), 10)
+    def read_corpus(file_names, take_top_funcs=None):
+        traces = StackTraceProcessor.process(utils.read_files(file_names), take_top_funcs)
         corpus = [doc2vec.TaggedDocument(trace, [i]) for i, (trace, _) in enumerate(traces)]
         return Doc2vecModelWrapper(corpus, None)
 
