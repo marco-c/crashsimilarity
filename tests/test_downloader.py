@@ -1,3 +1,4 @@
+import json
 import unittest
 from datetime import timedelta
 
@@ -105,6 +106,31 @@ class DownloaderTest(unittest.TestCase):
                 self.assertIs(other, [])
                 self.assertIsInstance(ctx.exception, requests.exceptions.HTTPError)
                 self.assertIn(404, ctx.exception)
+
+    def test_download_bugs(self):
+        # rest API test
+        bugzilla = BugzillaDownloader()
+        bugs_list = bugzilla.download_bugs('2016-02-31', '2016-05-31', fields=['id', 'cf_crash_signature'])
+        self.assertIsInstance(bugs_list, list)
+        self.assertGreater(len(bugs_list), 0)
+        for bug in bugs_list:
+            self.assertIn('id', bug)
+            self.assertIsInstance(bug['id'], int)
+            self.assertIn('cf_crash_signature', bug)
+            self.assertIsInstance(bug['cf_crash_signature'], str)
+
+        # input params test
+        cache = dict()
+        bugzilla = BugzillaDownloader(cache)
+        with requests_mock.Mocker() as m:
+            m.get(bugzilla._URL, json={'bugs': 'list of bugs'})
+            expected = {'key': 'value', 'include_fields': 'whatever', 'chfieldfrom': '2010-12-20',
+                        'chfieldto': '2010-12-31'}
+            result = bugzilla.download_bugs('2010-12-20', '2010-12-31',
+                                            filter_params={'key': 'value', 'include_fields': 'whatever'})
+            key = ('bugzilla_bugs', json.dumps(expected), utils.utc_today())
+            self.assertEqual(result, 'list of bugs')
+            self.assertDictEqual(cache, {key: 'list of bugs'})
 
     def test_downloader_404(self):
         downloader = SocorroDownloader()

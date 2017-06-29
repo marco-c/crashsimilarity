@@ -1,5 +1,6 @@
 import os
 from datetime import timedelta
+import json
 import logging
 
 import requests
@@ -50,9 +51,46 @@ class BugzillaDownloader(Downloader):
                 sig = sig[:pos]
             signatures.add(sig.strip())
 
-        if self._cache:
+        if self._cache is not None:
             self._cache[key] = list(signatures)
         return list(signatures)
+
+    def download_bugs(self, from_date=None, to_date=None, fields=None, filter_params=None):
+        """
+        :param from_date: string "YYYY-MM-DD"
+        :param to_date: string "YYYY-MM-DD"
+        :param fields: list of strings
+        :param filter_params: dict
+        :return: list of bugs
+        """
+        if not filter_params:
+            filter_params = {'include_fields': ','.join(fields),
+                             'chfield': '[Bug creation]',
+                             'chfieldfrom': from_date,
+                             'chfieldto': to_date,
+                             'f2': 'cf_crash_signature',
+                             'o2': 'isnotempty',
+                             'product': ['Firefox', 'Core']
+                             }
+        else:
+            if 'chfieldfrom' not in filter_params:
+                filter_params['chfieldfrom'] = from_date
+            if 'chfieldto' not in filter_params:
+                filter_params['chfieldto'] = to_date
+            if 'include_fields' not in filter_params:
+                filter_params['include_fields'] = ','.join(fields)
+
+        key = ('bugzilla_bugs', json.dumps(filter_params), utils.utc_today())
+        if self._cache and key in self._cache:
+            logging.debug('get data from cache')
+            return self._cache[key]
+
+        response = self.get_with_retries(self._URL, filter_params)
+        bugs = self._json_or_raise(response)['bugs']
+
+        if self._cache is not None:
+            self._cache[key] = bugs
+        return bugs
 
 
 class SocorroDownloader(Downloader):
@@ -82,7 +120,7 @@ class SocorroDownloader(Downloader):
         records = self._json_or_raise(response)['facets']['proto_signature']
         traces = set([r['term'] for r in records])
 
-        if self._cache:
+        if self._cache is not None:
             self._cache[key] = traces
         return traces
 
@@ -95,7 +133,7 @@ class SocorroDownloader(Downloader):
         params = {'crash_id': uuid}
         crash = self._json_or_raise(self.get_with_retries(self._PROCESSED_CRASH_URL, params))
 
-        if self._cache:
+        if self._cache is not None:
             self._cache[key] = crash
         return crash
 
