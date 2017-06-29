@@ -1,5 +1,6 @@
 import os
 from datetime import timedelta
+import json
 import logging
 
 import requests
@@ -79,7 +80,7 @@ class BugzillaDownloader(Downloader):
             if 'include_fields' not in filter_params:
                 filter_params['include_fields'] = ','.join(fields)
 
-        key = ('bugzilla_bugs', filter_params, utils.utc_today())
+        key = ('bugzilla_bugs', json.dumps(filter_params), utils.utc_today())
         if self._cache and key in self._cache:
             logging.debug('get data from cache')
             return self._cache[key]
