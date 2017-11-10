@@ -66,7 +66,7 @@ class SocorroDownloader(Downloader):
     def download_stack_traces_for_signature(self, signature, traces_num=100, period=timedelta(days=31)):
         from_date = utils.utc_today() - period
 
-        key = ('traces_for_signature', signature, utils.utc_today(), from_date)
+        key = ('traces_for_signature', signature, utils.utc_today())
         if self._cache and key in self._cache:
             logging.debug('get data from cache')
             return self._cache[key]

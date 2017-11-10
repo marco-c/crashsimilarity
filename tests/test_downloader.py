@@ -32,8 +32,7 @@ class DownloaderTest(unittest.TestCase):
         cache = {
             'unrelated_key': 'unrelated_key',
             ('crash_for_uuid', '42', utils.utc_today()): 'crash for 42',
-            ('traces_for_signature', 'js::whatever', utils.utc_today(),
-             utils.utc_today() - days_42): 'traces for js::whatever',
+            ('traces_for_signature', 'js::whatever', utils.utc_today()): 'traces for js::whatever',
             ('bugzilla_bug', '12345', utils.utc_today()): 'bug with id 12345'
         }
         socorro = SocorroDownloader(cache)
