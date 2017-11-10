@@ -38,7 +38,6 @@ class DownloaderTest(unittest.TestCase):
         }
         socorro = SocorroDownloader(cache)
         bugzilla = BugzillaDownloader(cache)
-        self.assertEqual(socorro.download_crash('42'), 'crash for 42')
         self.assertEqual(socorro.download_stack_traces_for_signature('js::whatever', period=days_42),
                          'traces for js::whatever')
         self.assertEqual(bugzilla.download_signatures('12345'), 'bug with id 12345')

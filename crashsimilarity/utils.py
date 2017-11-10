@@ -76,10 +76,6 @@ def create_dir(path):
             raise e
 
 
-def crashes_dump_file_path(day, product, data_dir):
-    return '{}/{}-crashes-{}.json'.format(data_dir, product.lower(), day)
-
-
 def write_json(path, data):
     with open(path, 'w') as f:
         for elem in data:
