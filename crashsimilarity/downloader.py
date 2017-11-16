@@ -66,7 +66,7 @@ class SocorroDownloader(Downloader):
     def download_stack_traces_for_signature(self, signature, traces_num=100, period=timedelta(days=31)):
         from_date = utils.utc_today() - period
 
-        key = ('traces_for_signature', signature, utils.utc_today(), from_date)
+        key = ('traces_for_signature', signature, utils.utc_today())
         if self._cache and key in self._cache:
             logging.debug('get data from cache')
             return self._cache[key]
@@ -87,16 +87,8 @@ class SocorroDownloader(Downloader):
         return traces
 
     def download_crash(self, uuid):
-        key = ('crash_for_uuid', uuid, utils.utc_today())
-        if self._cache and key in self._cache:
-            logging.debug('get data from cache')
-            return self._cache[key]
-
         params = {'crash_id': uuid}
         crash = self._json_or_raise(self.get_with_retries(self._PROCESSED_CRASH_URL, params))
-
-        if self._cache:
-            self._cache[key] = crash
         return crash
 
     def download_day_crashes(self, day, product='Firefox', offset=0, crashes_per_request=1000):
@@ -126,22 +118,24 @@ class SocorroDownloader(Downloader):
 
     @staticmethod
     def download_and_save_crashes(days, product='Firefox', save_to_dir=_CRASHSIMILARITY_DATA_DIR):
-        if not os.path.exists(save_to_dir):
-            utils.create_dir(save_to_dir)
-
+        utils.create_dir(save_to_dir)
         utils.write_json('{}/schema_version'.format(save_to_dir), [1])
 
         for i in range(0, days):
             day = utils.utc_today() - timedelta(i)
             gen = SocorroDownloader().download_day_crashes(day, product)
-            utils.write_json(utils.crashes_dump_file_path(day, product, save_to_dir), gen)
+            utils.write_json(SocorroDownloader.crashes_dump_file_path(day, product, save_to_dir), gen)
 
     @staticmethod
     def get_dump_paths(days, product='Firefox', data_dir=_CRASHSIMILARITY_DATA_DIR):
         last_day = utils.utc_today()
-        path = utils.crashes_dump_file_path(last_day, product, data_dir)
+        path = SocorroDownloader.crashes_dump_file_path(last_day, product, data_dir)
         if not os.path.exists(path):
             last_day -= timedelta(1)
         return [f for f in
-                [utils.crashes_dump_file_path(last_day - timedelta(i), product, data_dir) for i in range(0, days)]
+                [SocorroDownloader.crashes_dump_file_path(last_day - timedelta(i), product, data_dir) for i in range(0, days)]
                 if os.path.exists(f)]
+
+    @staticmethod
+    def crashes_dump_file_path(day, product, data_dir):
+        return '{}/{}-crashes-{}.json'.format(data_dir, product.lower(), day)

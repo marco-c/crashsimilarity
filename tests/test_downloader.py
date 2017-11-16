@@ -32,13 +32,11 @@ class DownloaderTest(unittest.TestCase):
         cache = {
             'unrelated_key': 'unrelated_key',
             ('crash_for_uuid', '42', utils.utc_today()): 'crash for 42',
-            ('traces_for_signature', 'js::whatever', utils.utc_today(),
-             utils.utc_today() - days_42): 'traces for js::whatever',
+            ('traces_for_signature', 'js::whatever', utils.utc_today()): 'traces for js::whatever',
             ('bugzilla_bug', '12345', utils.utc_today()): 'bug with id 12345'
         }
         socorro = SocorroDownloader(cache)
         bugzilla = BugzillaDownloader(cache)
-        self.assertEqual(socorro.download_crash('42'), 'crash for 42')
         self.assertEqual(socorro.download_stack_traces_for_signature('js::whatever', period=days_42),
                          'traces for js::whatever')
         self.assertEqual(bugzilla.download_signatures('12345'), 'bug with id 12345')
