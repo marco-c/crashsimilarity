@@ -14,4 +14,4 @@ if __name__ == '__main__':
 
     model = word2vec.Word2Vec(paths, force_train=False)
     print(model.top_similar_traces("mozalloc_abort | NS_DebugBreak | nsDebugImpl::Abort | NS_InvokeByIndex | XPCWrappedNative::CallMethod | XPC_WN_CallMethod | js::InternalCallOrConstruct | InternalCall"))
-    print(dict([(model.wv.index2word[i], similarity) for i, similarity in enumerate(model.wv.similar_by_word('igdumd32.dll@0x', topn=False))])['igdumd64.dll@0x'])
+    print(dict([(model._model.wv.index2word[i], similarity) for i, similarity in enumerate(model._model.wv.similar_by_word('igdumd32.dll@0x', topn=False))])['igdumd64.dll@0x'])
