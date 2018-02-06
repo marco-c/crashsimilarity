@@ -155,7 +155,7 @@ class CrashSimilarityTest(unittest.TestCase):
         resp = model._train_model()
         try:
             workers = multiprocessing.cpu_count()
-        except:
+        except NotImplementedError:
             workers = 2
         self.assertEqual(workers, resp.workers)
         self.assertEqual(8, resp.window)

@@ -23,7 +23,7 @@ class BaseCache(object):
     def load(file_name):
         try:
             return pickle.load(open(file_name, 'rb'))
-        except:
+        except FileNotFoundError:
             return None
 
     def try_load_or_build(self, file_name=None, data=None):
@@ -42,7 +42,7 @@ class DownloaderCache(dict, BaseCache):
         super().__setitem__(k, v)
         try:
             self.dump()
-        except:
+        except AttributeError:
             pass
 
     @staticmethod

@@ -35,7 +35,7 @@ class Doc2Vec(EmbeddingAlgo):
 
         try:
             workers = multiprocessing.cpu_count()
-        except:
+        except NotImplementedError:
             workers = 2
 
         model = gensim.models.Doc2Vec(size=100, window=8, iter=20, workers=workers)
