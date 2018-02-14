@@ -1,7 +1,7 @@
 import pickle
 from abc import abstractmethod
 
-from crashsimilarity.utils import StackTraceProcessor
+from crashsimilarity.stacktrace_utils import StackTraceProcessor
 
 
 class BaseCache(object):

@@ -10,7 +10,7 @@ from pyemd import emd
 from abc import ABCMeta, abstractmethod
 
 from crashsimilarity import utils
-from crashsimilarity.utils import StackTraceProcessor, StackTracesGetter
+from crashsimilarity.stacktrace_utils import StackTraceProcessor, StackTracesGetter
 
 pyximport.install()
 

@@ -1,10 +1,10 @@
 import os
-from datetime import timedelta
 import logging
 
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3 import Retry
+from datetime import timedelta
 
 from crashsimilarity import utils
 
