@@ -1,4 +1,5 @@
 import os
+import json
 import logging
 
 import requests
@@ -32,6 +33,19 @@ class BugzillaDownloader(Downloader):
     def __init__(self, cache=None):
         super().__init__(cache)
 
+    @staticmethod
+    def _clean_signatures(signatures):
+        clean_signatures = set()
+        for sig in signatures.split('\r\n'):
+            pos = sig.find('[@')
+            if pos != -1:
+                sig = sig[pos + 2:]
+            pos = sig.rfind(']')
+            if pos != -1:
+                sig = sig[:pos]
+                clean_signatures.add(sig.strip())
+        return list(clean_signatures)
+
     def download_signatures(self, bug_id):
         key = ('bugzilla_bug', bug_id, utils.utc_today())
         if self._cache and key in self._cache:
@@ -40,19 +54,40 @@ class BugzillaDownloader(Downloader):
 
         params = {'id': bug_id}
         response = self.get_with_retries(self._URL, params)
-        signatures = set()
-        for sig in self._json_or_raise(response)['bugs'][0]['cf_crash_signature'].split('\r\n'):
-            pos = sig.find('[@')
-            if pos != -1:
-                sig = sig[pos + 2:]
-            pos = sig.rfind(']')
-            if pos != -1:
-                sig = sig[:pos]
-            signatures.add(sig.strip())
+        signatures = self._json_or_raise(response)['bugs'][0]['cf_crash_signature']
+        cleaned_signatures = self._clean_signatures(signatures)
 
         if self._cache:
-            self._cache[key] = list(signatures)
-        return list(signatures)
+            self._cache[key] = cleaned_signatures
+        return cleaned_signatures
+
+    def download_bugs(self, from_date, to_date):
+        """
+        :param from_date: string "YYYY-MM-DD"
+        :param to_date: string "YYYY-MM-DD"
+        :return: list of bugs
+        """
+        params = {'include_fields': 'id,cf_crash_signature',
+                  'chfield': '[Bug creation]',
+                  'chfieldfrom': from_date,
+                  'chfieldto': to_date,
+                  'f2': 'cf_crash_signature',
+                  'o2': 'isnotempty',
+                  'product': ['Firefox', 'Core']}
+
+        key = ('bugzilla_bugs', json.dumps(params), utils.utc_today())
+        if self._cache and key in self._cache:
+            logging.debug('Getting bugs from cache')
+            return self._cache[key]
+
+        response = self.get_with_retries(self._URL, params)
+        bugs = self._json_or_raise(response)['bugs']
+        for bug in bugs:
+            bug['cf_crash_signature'] = self._clean_signatures(bug['cf_crash_signature'])
+
+        if self._cache is not None:
+            self._cache[key] = bugs
+        return bugs
 
 
 class SocorroDownloader(Downloader):
