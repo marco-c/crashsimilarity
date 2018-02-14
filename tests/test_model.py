@@ -2,7 +2,7 @@ import unittest
 import multiprocessing
 import numpy as np
 
-from crashsimilarity.stacktrace_utils import StackTraceProcessor
+from crashsimilarity.stacktrace import StackTraceProcessor
 from crashsimilarity.models import doc2vec, word2vec
 
 
