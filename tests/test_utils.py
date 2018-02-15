@@ -4,7 +4,7 @@ import json
 from datetime import datetime
 
 from crashsimilarity import utils
-from crashsimilarity.stacktrace_utils import StackTracesGetter, StackTraceProcessor
+from crashsimilarity.stacktrace import StackTracesGetter, StackTraceProcessor
 
 
 class UtilsTest(unittest.TestCase):

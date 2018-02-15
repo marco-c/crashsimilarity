@@ -2,7 +2,7 @@ import unittest
 import multiprocessing
 import numpy as np
 
-from crashsimilarity import utils
+from crashsimilarity.stacktrace import StackTraceProcessor
 from crashsimilarity.models import doc2vec, word2vec
 
 
@@ -68,10 +68,10 @@ class CrashSimilarityTest(unittest.TestCase):
         doc1 = "KiFastSystemCallRet | NtWaitForMultipleObjects | WaitForMultipleObjectsEx | RealMsgWaitForMultipleObjectsEx | CCliModalLoop::BlockFn | CoWaitForMultipleHandles | mozilla::ipc::MessageChannel::WaitForSyncNotifyWithA11yReentry | mozilla::ipc::MessageChannel::WaitForSyncNotify | mozilla::ipc::MessageChannel::Send | mozilla::dom::PScreenManagerChild::SendScreenRefresh | mozilla::widget::ScreenProxy::EnsureCacheIsValid | mozilla::widget::ScreenProxy::GetColorDepth | gfxPlatform::PopulateScreenInfo | gfxPlatform::Init | mozilla::dom::ContentProcess::Init | XRE_InitChildProcess | content_process_main | wmain | remainder | remainder | WinSqmStartSession | _SEH_epilog4 | WinSqmStartSession | _RtlUserThreadStart"
         doc2 = "Assertion::~Assertion | Assertion::Destroy | InMemoryDataSource::DeleteForwardArcsEntry | PL_DHashTableEnumerate | InMemoryDataSource::~InMemoryDataSource | InMemoryDataSource::`vector deleting destructor' | InMemoryDataSource::Internal::Release | InMemoryDataSource::Release | nsCOMPtr_base::~nsCOMPtr_base | RDFXMLDataSourceImpl::`vector deleting destructor' | RDFXMLDataSourceImpl::Release | DoDeferredRelease<T> | XPCJSRuntime::GCCallback | Collect | js::GC | js::GCForReason | nsXPConnect::Collect | nsCycleCollector::GCIfNeeded | nsCycleCollector::Collect | nsCycleCollector::Shutdown | nsCycleCollector_shutdown | mozilla::ShutdownXPCOM | ScopedXPCOMStartup::~ScopedXPCOMStartup | XREMain::XRE_main | XRE_main | wmain | __tmainCRTStartup | BaseThreadInitThunk | __RtlUserThreadStart | _RtlUserThreadStart"
 
-        words_to_test1 = utils.StackTraceProcessor.preprocess(doc1)
+        words_to_test1 = StackTraceProcessor.preprocess(doc1)
         words_to_test_clean1 = [w for w in np.unique(words_to_test1).tolist() if w in trained_model]
 
-        words_to_test2 = utils.StackTraceProcessor.preprocess(doc2)
+        words_to_test2 = StackTraceProcessor.preprocess(doc2)
         words_to_test_clean2 = [w for w in np.unique(words_to_test2).tolist() if w in trained_model]
 
         all_distances = np.array(1.0 - np.dot(trained_model.wv.syn0norm, trained_model.wv.syn0norm[
@@ -84,10 +84,10 @@ class CrashSimilarityTest(unittest.TestCase):
         doc1 = "A | A | A"
         doc2 = "A | A | A"
 
-        words_to_test1 = utils.StackTraceProcessor.preprocess(doc1)
+        words_to_test1 = StackTraceProcessor.preprocess(doc1)
         words_to_test_clean1 = [w for w in np.unique(words_to_test1).tolist() if w in trained_model]
 
-        words_to_test2 = utils.StackTraceProcessor.preprocess(doc2)
+        words_to_test2 = StackTraceProcessor.preprocess(doc2)
         words_to_test_clean2 = [w for w in np.unique(words_to_test2).tolist() if w in trained_model]
 
         all_distances = np.array(1.0 - np.dot(trained_model.wv.syn0norm, trained_model.wv.syn0norm[
@@ -101,10 +101,10 @@ class CrashSimilarityTest(unittest.TestCase):
         doc1 = "KiFastSystemCallRet | NtWaitForMultipleObjects | WaitForMultipleObjectsEx | RealMsgWaitForMultipleObjectsEx | CCliModalLoop::BlockFn | CoWaitForMultipleHandles | mozilla::ipc::MessageChannel::WaitForSyncNotifyWithA11yReentry | mozilla::ipc::MessageChannel::WaitForSyncNotify | mozilla::ipc::MessageChannel::Send | mozilla::dom::PScreenManagerChild::SendScreenRefresh | mozilla::widget::ScreenProxy::EnsureCacheIsValid | mozilla::widget::ScreenProxy::GetColorDepth | gfxPlatform::PopulateScreenInfo | gfxPlatform::Init | mozilla::dom::ContentProcess::Init | XRE_InitChildProcess | content_process_main | wmain | remainder | remainder | WinSqmStartSession | _SEH_epilog4 | WinSqmStartSession | _RtlUserThreadStart"
         doc2 = "Assertion::~Assertion | Assertion::Destroy | InMemoryDataSource::DeleteForwardArcsEntry | PL_DHashTableEnumerate | InMemoryDataSource::~InMemoryDataSource | InMemoryDataSource::`vector deleting destructor' | InMemoryDataSource::Internal::Release | InMemoryDataSource::Release | nsCOMPtr_base::~nsCOMPtr_base | RDFXMLDataSourceImpl::`vector deleting destructor' | RDFXMLDataSourceImpl::Release | DoDeferredRelease<T> | XPCJSRuntime::GCCallback | Collect | js::GC | js::GCForReason | nsXPConnect::Collect | nsCycleCollector::GCIfNeeded | nsCycleCollector::Collect | nsCycleCollector::Shutdown | nsCycleCollector_shutdown | mozilla::ShutdownXPCOM | ScopedXPCOMStartup::~ScopedXPCOMStartup | XREMain::XRE_main | XRE_main | wmain | __tmainCRTStartup | BaseThreadInitThunk | __RtlUserThreadStart | _RtlUserThreadStart"
 
-        words_to_test1 = utils.StackTraceProcessor.preprocess(doc1)
+        words_to_test1 = StackTraceProcessor.preprocess(doc1)
         words_to_test_clean1 = [w for w in np.unique(words_to_test1).tolist() if w in trained_model]
 
-        words_to_test2 = utils.StackTraceProcessor.preprocess(doc2)
+        words_to_test2 = StackTraceProcessor.preprocess(doc2)
         words_to_test_clean2 = [w for w in np.unique(words_to_test2).tolist() if w in trained_model]
 
         all_distances = np.array(1.0 - np.dot(trained_model.wv.syn0norm, trained_model.wv.syn0norm[
@@ -117,10 +117,10 @@ class CrashSimilarityTest(unittest.TestCase):
         doc1 = "A | A | A"
         doc2 = "A | A | A"
 
-        words_to_test1 = utils.StackTraceProcessor.preprocess(doc1)
+        words_to_test1 = StackTraceProcessor.preprocess(doc1)
         words_to_test_clean1 = [w for w in np.unique(words_to_test1).tolist() if w in trained_model]
 
-        words_to_test2 = utils.StackTraceProcessor.preprocess(doc2)
+        words_to_test2 = StackTraceProcessor.preprocess(doc2)
         words_to_test_clean2 = [w for w in np.unique(words_to_test2).tolist() if w in trained_model]
 
         all_distances = np.array(1.0 - np.dot(trained_model.wv.syn0norm, trained_model.wv.syn0norm[
