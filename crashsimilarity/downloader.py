@@ -1,7 +1,6 @@
 import os
 from datetime import timedelta
 import logging
-import json
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -75,18 +74,11 @@ class BugzillaDownloader(Downloader):
                   'o2': 'isnotempty',
                   'product': ['Firefox', 'Core']}
 
-        key = ('bugzilla_bugs', json.dumps(params), utils.utc_today())
-        if self._cache and key in self._cache:
-            logging.debug('Getting bugs from cache')
-            return self._cache[key]
-
+        logging.info("Fetching bugs from Bugzilla..")
         response = self.get_with_retries(self._URL, params)
         bugs = self._json_or_raise(response)['bugs']
         for bug in bugs:
             bug['cf_crash_signature'] = self._clean_signatures(bug['cf_crash_signature'])
-
-        if self._cache is not None:
-            self._cache[key] = bugs
         return bugs
 
 
