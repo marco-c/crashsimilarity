@@ -1,6 +1,6 @@
 import os
-import logging
 from datetime import timedelta
+import logging
 
 import requests
 from requests.adapters import HTTPAdapter
