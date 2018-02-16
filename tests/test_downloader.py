@@ -26,6 +26,17 @@ class DownloaderTest(unittest.TestCase):
         self.assertCountEqual(resp, crash_signatures)
         self.assertCountEqual(resp2, crash_signatures2)
 
+    def test_download_bugs(self):
+        bugzilla = BugzillaDownloader()
+        bugs_list = bugzilla.download_bugs('2018-01-01', '2018-02-01')
+        self.assertIsInstance(bugs_list, list)
+        self.assertGreater(len(bugs_list), 0)
+        for bug in bugs_list:
+            self.assertIn('id', bug)
+            self.assertIn('cf_crash_signature', bug)
+            self.assertIsInstance(bug['id'], int)
+            self.assertIsInstance(bug['cf_crash_signature'], list)
+
     # cache tests can fail if started just before midnight. nobody should care
     def test_downloader_actual_cache(self):
         days_42 = timedelta(days=42)
