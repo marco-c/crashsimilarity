@@ -6,7 +6,6 @@ import logging
 
 import gensim
 from datetime import datetime
-from pathlib import Path
 
 from crashsimilarity import utils
 from crashsimilarity.models.base import EmbeddingAlgo
