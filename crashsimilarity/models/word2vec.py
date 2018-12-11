@@ -6,6 +6,7 @@ import logging
 
 import gensim
 from datetime import datetime
+from pathlib import Path
 
 from crashsimilarity import utils
 from crashsimilarity.models.base import EmbeddingAlgo
@@ -16,10 +17,10 @@ class Word2Vec(EmbeddingAlgo):
         return [elem[0] for elem in self._read_traces()]
 
     def _extract_words_from_model(self, doc_id):
-        return [w for w in self._corpus[doc_id] if w in self._model]
+        return [w for w in self._corpus[doc_id] if w in self._model.wv.vocab]
 
     def _extract_indices_from_model(self, doc_id):
-        return [self._model.wv.vocab[word].index for word in self._corpus[doc_id] if word in self._model]
+        return [self._model.wv.vocab[word].index for word in self._corpus[doc_id] if word in self._model.wv.vocab]
 
     def _train_model(self, force_train=False):
         current_date = datetime.now().strftime('%d%b%Y')
@@ -45,7 +46,7 @@ class Word2Vec(EmbeddingAlgo):
 
         t = time.time()
         logging.info('Training model...')
-        model.train(self._corpus)
+        model.train(self._corpus, total_examples=model.corpus_count, epochs=model.epochs)
         logging.info('Model trained in ' + str(time.time() - t) + ' s.')
 
         utils.create_dir('trained_models/word2vec')

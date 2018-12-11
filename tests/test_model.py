@@ -1,5 +1,7 @@
 import unittest
 import multiprocessing
+import os
+from pathlib import Path
 import numpy as np
 
 from crashsimilarity.stacktrace import StackTraceProcessor
@@ -10,7 +12,9 @@ class CrashSimilarityTest(unittest.TestCase):
     # Train Model to be used in all tests
     @classmethod
     def setUpClass(self):
-        self.paths = ['tests/test.json']
+        current_abs_path = os.path.abspath(os.path.dirname(__file__))
+        project_abs_path = Path(current_abs_path).parent
+        self.paths = [os.path.join(project_abs_path, 'tests/test.json')]
         self.doc2vec_model = doc2vec.Doc2Vec(self.paths)
         self.doc2vec_trained_model = self.doc2vec_model.get_model()
         self.doc2vec_trained_model.init_sims(replace=True)
@@ -69,13 +73,17 @@ class CrashSimilarityTest(unittest.TestCase):
         doc2 = "Assertion::~Assertion | Assertion::Destroy | InMemoryDataSource::DeleteForwardArcsEntry | PL_DHashTableEnumerate | InMemoryDataSource::~InMemoryDataSource | InMemoryDataSource::`vector deleting destructor' | InMemoryDataSource::Internal::Release | InMemoryDataSource::Release | nsCOMPtr_base::~nsCOMPtr_base | RDFXMLDataSourceImpl::`vector deleting destructor' | RDFXMLDataSourceImpl::Release | DoDeferredRelease<T> | XPCJSRuntime::GCCallback | Collect | js::GC | js::GCForReason | nsXPConnect::Collect | nsCycleCollector::GCIfNeeded | nsCycleCollector::Collect | nsCycleCollector::Shutdown | nsCycleCollector_shutdown | mozilla::ShutdownXPCOM | ScopedXPCOMStartup::~ScopedXPCOMStartup | XREMain::XRE_main | XRE_main | wmain | __tmainCRTStartup | BaseThreadInitThunk | __RtlUserThreadStart | _RtlUserThreadStart"
 
         words_to_test1 = StackTraceProcessor.preprocess(doc1)
-        words_to_test_clean1 = [w for w in np.unique(words_to_test1).tolist() if w in trained_model]
+        words_to_test_clean1 = [w for w in np.unique(words_to_test1).tolist() if w in trained_model.wv.vocab]
 
         words_to_test2 = StackTraceProcessor.preprocess(doc2)
-        words_to_test_clean2 = [w for w in np.unique(words_to_test2).tolist() if w in trained_model]
+        words_to_test_clean2 = [w for w in np.unique(words_to_test2).tolist() if w in trained_model.wv.vocab]
 
-        all_distances = np.array(1.0 - np.dot(trained_model.wv.syn0norm, trained_model.wv.syn0norm[
-            [trained_model.wv.vocab[word].index for word in words_to_test_clean1]].transpose()), dtype=np.double)
+        if model.get_model_name() == 'Word2Vec':
+            all_distances = np.array(1.0 - np.dot(trained_model.wv.vectors_norm, trained_model.wv.vectors_norm[
+                [trained_model.wv.vocab[word].index for word in words_to_test_clean1]].transpose()), dtype=np.double)
+        else:
+            all_distances = np.array(1.0 - np.dot(trained_model.wv.vectors, trained_model.wv.vectors[
+                [trained_model.wv.vocab[word].index for word in words_to_test_clean1]].transpose()), dtype=np.double)
 
         distance = model.wmdistance(words_to_test_clean1, words_to_test_clean2, all_distances)
         self.assertNotEqual(float('inf'), distance)
@@ -85,13 +93,17 @@ class CrashSimilarityTest(unittest.TestCase):
         doc2 = "A | A | A"
 
         words_to_test1 = StackTraceProcessor.preprocess(doc1)
-        words_to_test_clean1 = [w for w in np.unique(words_to_test1).tolist() if w in trained_model]
+        words_to_test_clean1 = [w for w in np.unique(words_to_test1).tolist() if w in trained_model.wv.vocab]
 
         words_to_test2 = StackTraceProcessor.preprocess(doc2)
-        words_to_test_clean2 = [w for w in np.unique(words_to_test2).tolist() if w in trained_model]
+        words_to_test_clean2 = [w for w in np.unique(words_to_test2).tolist() if w in trained_model.wv.vocab]
 
-        all_distances = np.array(1.0 - np.dot(trained_model.wv.syn0norm, trained_model.wv.syn0norm[
-            [trained_model.wv.vocab[word].index for word in words_to_test_clean1]].transpose()), dtype=np.double)
+        if model.get_model_name() == 'Word2Vec':
+            all_distances = np.array(1.0 - np.dot(trained_model.wv.vectors_norm, trained_model.wv.vectors_norm[
+                [trained_model.wv.vocab[word].index for word in words_to_test_clean1]].transpose()), dtype=np.double)
+        else:
+            all_distances = np.array(1.0 - np.dot(trained_model.wv.vectors, trained_model.wv.vectors[
+                [trained_model.wv.vocab[word].index for word in words_to_test_clean1]].transpose()), dtype=np.double)
 
         distance = model.wmdistance(words_to_test_clean1, words_to_test_clean2, all_distances)
 
@@ -102,13 +114,17 @@ class CrashSimilarityTest(unittest.TestCase):
         doc2 = "Assertion::~Assertion | Assertion::Destroy | InMemoryDataSource::DeleteForwardArcsEntry | PL_DHashTableEnumerate | InMemoryDataSource::~InMemoryDataSource | InMemoryDataSource::`vector deleting destructor' | InMemoryDataSource::Internal::Release | InMemoryDataSource::Release | nsCOMPtr_base::~nsCOMPtr_base | RDFXMLDataSourceImpl::`vector deleting destructor' | RDFXMLDataSourceImpl::Release | DoDeferredRelease<T> | XPCJSRuntime::GCCallback | Collect | js::GC | js::GCForReason | nsXPConnect::Collect | nsCycleCollector::GCIfNeeded | nsCycleCollector::Collect | nsCycleCollector::Shutdown | nsCycleCollector_shutdown | mozilla::ShutdownXPCOM | ScopedXPCOMStartup::~ScopedXPCOMStartup | XREMain::XRE_main | XRE_main | wmain | __tmainCRTStartup | BaseThreadInitThunk | __RtlUserThreadStart | _RtlUserThreadStart"
 
         words_to_test1 = StackTraceProcessor.preprocess(doc1)
-        words_to_test_clean1 = [w for w in np.unique(words_to_test1).tolist() if w in trained_model]
+        words_to_test_clean1 = [w for w in np.unique(words_to_test1).tolist() if w in trained_model.wv.vocab]
 
         words_to_test2 = StackTraceProcessor.preprocess(doc2)
-        words_to_test_clean2 = [w for w in np.unique(words_to_test2).tolist() if w in trained_model]
+        words_to_test_clean2 = [w for w in np.unique(words_to_test2).tolist() if w in trained_model.wv.vocab]
 
-        all_distances = np.array(1.0 - np.dot(trained_model.wv.syn0norm, trained_model.wv.syn0norm[
-            [trained_model.wv.vocab[word].index for word in words_to_test_clean1]].transpose()), dtype=np.double)
+        if model.get_model_name() == 'Word2Vec':
+            all_distances = np.array(1.0 - np.dot(trained_model.wv.vectors_norm, trained_model.wv.vectors_norm[
+                [trained_model.wv.vocab[word].index for word in words_to_test_clean1]].transpose()), dtype=np.double)
+        else:
+            all_distances = np.array(1.0 - np.dot(trained_model.wv.vectors, trained_model.wv.vectors[
+                [trained_model.wv.vocab[word].index for word in words_to_test_clean1]].transpose()), dtype=np.double)
 
         distance = model.wmdistance(words_to_test_clean1, words_to_test_clean2, all_distances, distance_metric='euclidean')
         self.assertNotEqual(float('inf'), distance)
@@ -118,13 +134,17 @@ class CrashSimilarityTest(unittest.TestCase):
         doc2 = "A | A | A"
 
         words_to_test1 = StackTraceProcessor.preprocess(doc1)
-        words_to_test_clean1 = [w for w in np.unique(words_to_test1).tolist() if w in trained_model]
+        words_to_test_clean1 = [w for w in np.unique(words_to_test1).tolist() if w in trained_model.wv.vocab]
 
         words_to_test2 = StackTraceProcessor.preprocess(doc2)
-        words_to_test_clean2 = [w for w in np.unique(words_to_test2).tolist() if w in trained_model]
+        words_to_test_clean2 = [w for w in np.unique(words_to_test2).tolist() if w in trained_model.wv.vocab]
 
-        all_distances = np.array(1.0 - np.dot(trained_model.wv.syn0norm, trained_model.wv.syn0norm[
-            [trained_model.wv.vocab[word].index for word in words_to_test_clean1]].transpose()), dtype=np.double)
+        if model.get_model_name() == 'Word2Vec':
+            all_distances = np.array(1.0 - np.dot(trained_model.wv.vectors_norm, trained_model.wv.vectors_norm[
+                [trained_model.wv.vocab[word].index for word in words_to_test_clean1]].transpose()), dtype=np.double)
+        else:
+            all_distances = np.array(1.0 - np.dot(trained_model.wv.vectors, trained_model.wv.vectors[
+                [trained_model.wv.vocab[word].index for word in words_to_test_clean1]].transpose()), dtype=np.double)
 
         distance = model.wmdistance(words_to_test_clean1, words_to_test_clean2, all_distances, distance_metric='euclidean')
         self.assertEqual(float('inf'), distance)
@@ -159,7 +179,7 @@ class CrashSimilarityTest(unittest.TestCase):
             workers = 2
         self.assertEqual(workers, resp.workers)
         self.assertEqual(8, resp.window)
-        self.assertEqual(20, resp.iter)
+        self.assertEqual(20, resp.epochs)
         self.assertEqual(101, len(resp.wv.vocab))
 
     def test_train_model(self):
