@@ -1,7 +1,5 @@
 import unittest
 import multiprocessing
-import os
-from pathlib import Path
 import numpy as np
 
 from crashsimilarity.stacktrace import StackTraceProcessor
@@ -12,9 +10,7 @@ class CrashSimilarityTest(unittest.TestCase):
     # Train Model to be used in all tests
     @classmethod
     def setUpClass(self):
-        current_abs_path = os.path.abspath(os.path.dirname(__file__))
-        project_abs_path = Path(current_abs_path).parent
-        self.paths = [os.path.join(project_abs_path, 'tests/test.json')]
+        self.paths = ['tests/test.json']
         self.doc2vec_model = doc2vec.Doc2Vec(self.paths)
         self.doc2vec_trained_model = self.doc2vec_model.get_model()
         self.doc2vec_trained_model.init_sims(replace=True)
