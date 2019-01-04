@@ -16,10 +16,10 @@ class Doc2Vec(EmbeddingAlgo):
         return [gensim.models.doc2vec.TaggedDocument(trace, [i, signature]) for i, (trace, signature) in enumerate(self._read_traces())]
 
     def _extract_words_from_model(self, doc_id):
-        return [w for w in self._corpus[doc_id].words if w in self._model]
+        return [w for w in self._corpus[doc_id].words if w in self._model.wv.vocab]
 
     def _extract_indices_from_model(self, doc_id):
-        return [self._model.wv.vocab[word].index for word in self._corpus[doc_id].words if word in self._model]
+        return [self._model.wv.vocab[word].index for word in self._corpus[doc_id].words if word in self._model.wv.vocab]
 
     def _train_model(self, force_train=False):
         current_date = datetime.now().strftime('%d%b%Y')
@@ -38,13 +38,13 @@ class Doc2Vec(EmbeddingAlgo):
         except NotImplementedError:
             workers = 2
 
-        model = gensim.models.Doc2Vec(size=100, window=8, iter=20, workers=workers)
+        model = gensim.models.Doc2Vec(vector_size=100, window=8, epochs=20, workers=workers)
         model.build_vocab(self._corpus)
         logging.debug("Vocab Length{}".format(len(model.wv.vocab)))
 
         t = time.time()
         logging.info('Training model...')
-        model.train(self._corpus)
+        model.train(self._corpus, total_examples=model.corpus_count, epochs=model.epochs)
         logging.info('Model trained in ' + str(time.time() - t) + ' s.')
 
         utils.create_dir('trained_models/doc2vec')

@@ -34,6 +34,9 @@ class EmbeddingAlgo(object):
         self._corpus = self._read_corpus()
         self._model = self._train_model(force_train)
 
+    def get_model_name(self):
+        return self.__class__.__name__
+
     def get_model(self):
         return self._model
 
@@ -71,7 +74,7 @@ class EmbeddingAlgo(object):
         else:
             old_models = [model for model in os.listdir(path) if current_date not in model]
         for model in old_models:
-            os.remove(path + model)
+            os.remove(os.path.join(path, model))
 
     def wmdistance(self, document1, document2, all_distances, distance_metric='cosine'):
         model = self._model
@@ -95,7 +98,7 @@ class EmbeddingAlgo(object):
                     continue
 
                 if distance_metric == 'euclidean':
-                    distance_matrix[i, j] = np.sqrt(np.sum((model[t1] - model[t2]) ** 2))
+                    distance_matrix[i, j] = np.sqrt(np.sum((model.wv[t1] - model.wv[t2]) ** 2))
                 elif distance_metric == 'cosine':
                     distance_matrix[i, j] = all_distances[model.wv.vocab[t2].index, i]
 
@@ -123,10 +126,8 @@ class EmbeddingAlgo(object):
         model = self._model
         model.init_sims(replace=True)
 
-        similarities = []
-
         words_to_test = StackTraceProcessor.preprocess(stack_trace)
-        words_to_test_clean = [w for w in np.unique(words_to_test).tolist() if w in model]
+        words_to_test_clean = [w for w in np.unique(words_to_test).tolist() if w in model.wv.vocab]
 
         # TODO: Test if a first sorting with the average vectors is useful.
         '''
@@ -135,8 +136,12 @@ class EmbeddingAlgo(object):
         '''
 
         # Cos-similarity
-        all_distances = np.array(1.0 - np.dot(model.wv.syn0norm, model.wv.syn0norm[
-            [model.wv.vocab[word].index for word in words_to_test_clean]].transpose()), dtype=np.double)
+        if self.get_model_name() == 'Word2Vec':
+            all_distances = np.array(1.0 - np.dot(model.wv.vectors_norm, model.wv.vectors_norm[
+                [model.wv.vocab[word].index for word in words_to_test_clean]].transpose()), dtype=np.double)
+        else:
+            all_distances = np.array(1.0 - np.dot(model.wv.vectors, model.wv.vectors[
+                [model.wv.vocab[word].index for word in words_to_test_clean]].transpose()), dtype=np.double)
 
         # Relaxed Word Mover's Distance for selecting
         t = time.time()
@@ -187,12 +192,17 @@ class EmbeddingAlgo(object):
         already_processed = set()
 
         for doc1 in traces1:
-            words1 = np.unique([word for word in StackTraceProcessor.preprocess(doc1) if word in model]).tolist()
-            distances = np.array(1.0 - np.dot(model.wv.syn0norm, model.wv.syn0norm[
-                [model.wv.vocab[word].index for word in words1]].transpose()), dtype=np.double)
+            words1 = np.unique([word for word in StackTraceProcessor.preprocess(doc1) if word in model.wv.vocab]).tolist()
+
+            if self.get_model_name() == 'Word2Vec':
+                distances = np.array(1.0 - np.dot(model.wv.vectors_norm, model.wv.vectors_norm[
+                    [model.wv.vocab[word].index for word in words1]].transpose()), dtype=np.double)
+            else:
+                distances = np.array(1.0 - np.dot(model.wv.vectors, model.wv.vectors[
+                    [model.wv.vocab[word].index for word in words1]].transpose()), dtype=np.double)
 
             for doc2 in traces2:
-                words2 = [word for word in StackTraceProcessor.preprocess(doc2) if word in model]
+                words2 = [word for word in StackTraceProcessor.preprocess(doc2) if word in model.wv.vocab]
 
                 if words1 == words2 or frozenset([tuple(words1), tuple(words2)]) in already_processed:
                     continue
