@@ -3,5 +3,5 @@ gensim==3.6.0
 smart_open==1.7.1
 numpy==1.15.4
 requests[security]==2.21.0
-Cython==0.29.1
+Cython==0.29.2
 python-dateutil==2.7.5
