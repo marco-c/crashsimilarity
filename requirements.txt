@@ -2,6 +2,6 @@ pyemd==0.5.1
 gensim==3.7.3
 smart_open==1.8.3
 numpy==1.16.3
-requests[security]==2.21.0
+requests[security]==2.22.0
 Cython==0.29.7
 python-dateutil==2.8.0
