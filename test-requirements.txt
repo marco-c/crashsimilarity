@@ -1,5 +1,5 @@
 flake8==3.7.6
 coverage==4.5.3
-pytest==4.6.3
+pytest==5.0.0
 requests_mock==1.6.0
 google-compute-engine==2.8.13
