@@ -1,6 +1,6 @@
 pyemd==0.5.1
 gensim==3.8.3
-smart_open==2.2.1
+smart_open==3.0.0
 numpy==1.19.3
 requests[security]==2.24.0
 Cython==0.29.21
