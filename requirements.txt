@@ -1,5 +1,5 @@
 pyemd==0.5.1
-gensim==3.8.3
+gensim==4.3.0
 smart_open==4.0.1
 numpy==1.19.4
 requests[security]==2.25.0
